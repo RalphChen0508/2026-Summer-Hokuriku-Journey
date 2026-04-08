@@ -131,7 +131,7 @@
             let userRole = sessionStorage.getItem('dashboard_role');
 
             if (!userRole) {
-                const input = prompt("請輸入通行密碼：\n(一般檢視請輸入 8888)");
+                const input = prompt("請輸入通行密碼：\n");
                 
                 if (input === EDIT_PASSWORD) {
                     userRole = 'editor';
