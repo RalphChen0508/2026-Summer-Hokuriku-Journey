@@ -143,8 +143,8 @@
         (async function initAuth() {
             // [安全] 這裡不再儲存明文，而是儲存對應密碼的 SHA-256 Hash 值
             // 若需產生新的 Hash，可在 DevTools 輸入： hashString("新密碼").then(console.log)
-            const VIEW_HASH = "0a010d8ee75f3a0786fb269efdbcf9ddc0eb00924b1dc71501b15264b3ecb53a"; // 對應: 8
-            const EDIT_HASH = "b9ab11cdfa481e355e1aab698f2b740eb7dfd1dd2ef1d7d07d12f3bc30cb8558"; // 對應: ys
+            const VIEW_HASH = "0a010d8ee75f3a0786fb269efdbcf9ddc0eb00924b1dc71501b15264b3ecb53a"; // 對應: 8888
+            const EDIT_HASH = "b9ab11cdfa481e355e1aab698f2b740eb7dfd1dd2ef1d7d07d12f3bc30cb8558"; // 對應: ysYS1028
             
             let userRole = sessionStorage.getItem('dashboard_role');
 
