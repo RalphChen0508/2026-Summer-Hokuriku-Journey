@@ -131,7 +131,7 @@
             let userRole = sessionStorage.getItem('dashboard_role');
 
             if (!userRole) {
-                const input = prompt("請輸入密碼：\n");
+                const input = prompt("請輸入通行密碼：\n(一般檢視請輸入 8888)");
                 
                 if (input === EDIT_PASSWORD) {
                     userRole = 'editor';
@@ -230,29 +230,32 @@
 
             <!-- 資訊快覽模塊 (Horizontal Grid) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 天數統計 -->
-                <div class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4">
-                    <div class="bg-theme-100 p-4 rounded-2xl text-theme-600"><i data-lucide="calendar-days" width="28"></i></div>
+                <!-- 天數統計 -> 連結至日程表 -->
+                <div onclick="switchTab('daily')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-theme-200 group relative">
+                    <div class="bg-theme-100 p-4 rounded-2xl text-theme-600 group-hover:scale-110 transition-transform"><i data-lucide="calendar-days" width="28"></i></div>
                     <div>
                         <div class="text-3xl font-black text-slate-800">10<span class="text-lg font-medium text-slate-500"> 天</span></div>
                         <div class="text-sm font-bold text-theme-600">5 個主要城市</div>
                     </div>
+                    <i data-lucide="arrow-right" class="absolute top-4 right-4 text-theme-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                 </div>
-                <!-- 交通工具 -->
-                <div class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4">
-                    <div class="bg-blue-100 p-4 rounded-2xl text-blue-600"><i data-lucide="car-front" width="28"></i></div>
+                <!-- 交通工具 -> 連結至資訊 -->
+                <div onclick="switchTab('advisories')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-blue-200 group relative">
+                    <div class="bg-blue-100 p-4 rounded-2xl text-blue-600 group-hover:scale-110 transition-transform"><i data-lucide="car-front" width="28"></i></div>
                     <div>
                         <div class="text-xl font-black text-slate-800">Toyota Noah</div>
                         <div class="text-sm font-bold text-blue-600">HEV 7人座 / 異地還車</div>
                     </div>
+                    <i data-lucide="arrow-right" class="absolute top-4 right-4 text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                 </div>
-                <!-- 預算概覽 -->
-                <div class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4">
-                    <div class="bg-orange-100 p-4 rounded-2xl text-orange-600"><i data-lucide="circle-dollar-sign" width="28"></i></div>
+                <!-- 預算概覽 -> 連結至預算 -->
+                <div onclick="switchTab('budget')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-orange-200 group relative">
+                    <div class="bg-orange-100 p-4 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform"><i data-lucide="circle-dollar-sign" width="28"></i></div>
                     <div>
                         <div class="text-xs font-bold text-slate-400 mb-1">預估總旅費 (TWD)</div>
                         <div id="overview-budget-total" class="text-2xl font-black text-slate-800">計算中...</div>
                     </div>
+                    <i data-lucide="arrow-right" class="absolute top-4 right-4 text-orange-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                 </div>
             </div>
 
