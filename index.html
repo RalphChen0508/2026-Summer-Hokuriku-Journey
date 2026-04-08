@@ -3,261 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 仲夏北陸深度自駕之旅 (Live Sync)</title>
+    <title>2026 仲夏北陸深度自駕之旅</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 
+    <!-- 自訂 Tailwind 配置與樣式 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans TC"', 'sans-serif'] },
+                    colors: {
+                        theme: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 100%);
+            background-attachment: fixed;
+            color: #1e293b;
+        }
+        
+        /* 隱藏預設捲軸但保持滾動 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        /* 懸浮分頁樣式 */
+        .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .tab-content.active { display: block; }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .tab-btn.active {
-            background-color: white;
-            color: #0f766e; /* emerald-700 */
-            border-top: 4px solid #10b981; /* emerald-500 */
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        .nav-btn {
+            transition: all 0.3s ease;
         }
-        .tab-btn:not(.active) {
-            background-color: rgba(15, 118, 110, 0.4); /* emerald-700 w/ opacity */
-            color: #d1fae5; /* emerald-100 */
+        .nav-btn.active {
+            background-color: #0d9488; /* theme-600 */
+            color: white;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
-        .tab-btn:not(.active):hover {
-            background-color: rgba(15, 118, 110, 0.6);
+        .nav-btn:not(.active) {
+            color: #475569;
+        }
+        .nav-btn:not(.active):hover {
+            background-color: #f1f5f9;
         }
 
         /* 編輯模式 UX 優化 */
+        [contenteditable="true"] {
+            transition: all 0.2s;
+            border-bottom: 1px dashed transparent;
+        }
         [contenteditable="true"]:hover {
-            background-color: rgba(16, 185, 129, 0.1);
-            border-radius: 4px;
+            background-color: rgba(20, 184, 166, 0.08);
+            border-bottom: 1px dashed #14b8a6;
             cursor: text;
         }
         [contenteditable="true"]:focus {
             background-color: white;
-            outline: 2px solid #10b981;
-            border-radius: 4px;
+            outline: none;
+            border-bottom: 1px solid #0d9488;
             padding: 2px 4px;
-            z-index: 10;
-            position: relative;
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+            border-radius: 4px;
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
         }
-        
-        /* 同步狀態指示燈 */
-        #sync-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 50;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            pointer-events: none;
+
+        /* 毛玻璃卡片效果 (Glassmorphism) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
         }
-        .status-saved { background: #dcfce7; color: #166534; } /* Green */
-        .status-saving { background: #fef9c3; color: #854d0e; } /* Yellow */
-        .status-error { background: #fee2e2; color: #991b1b; } /* Red */
+
+        /* 時間軸線條 */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            bottom: -24px;
+            left: 11px;
+            width: 2px;
+            background: #ccfbf1;
+            z-index: 0;
+        }
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800 pb-12" style="display: none;">
+<body class="min-h-screen pb-24" style="display: none;">
 
+    <!-- ========================================== -->
+    <!-- 雙重權限認證腳本 (RBAC Password Guard) -->
+    <!-- ========================================== -->
     <script>
+        let isEditor = false; // 全域變數，決定 UI 渲染邏輯
+        
         (function() {
-            const ACCESS_PASSWORD = "8888"; 
-            const isAuth = sessionStorage.getItem('is_dashboard_auth');
+            const VIEW_PASSWORD = "8888"; // 檢視者密碼 (ReadOnly)
+            const EDIT_PASSWORD = "ysYS1028"; // 編輯者密碼 (Read & Write)
+            
+            let userRole = sessionStorage.getItem('dashboard_role');
 
-            if (isAuth === 'true') {
-                document.body.style.display = 'block';
-                return;
-            }
-
-            setTimeout(() => {
-                const input = prompt("請輸入密碼以檢視 2026 仲夏北陸自駕行程 (Live Sync版)：\n");
-                if (input === ACCESS_PASSWORD) {
-                    document.body.style.display = 'block';
-                    sessionStorage.setItem('is_dashboard_auth', 'true');
+            if (!userRole) {
+                const input = prompt("請輸入密碼：\n");
+                
+                if (input === EDIT_PASSWORD) {
+                    userRole = 'editor';
+                } else if (input === VIEW_PASSWORD) {
+                    userRole = 'viewer';
                 } else {
                     document.body.style.display = 'flex';
                     document.body.style.justifyContent = 'center';
                     document.body.style.alignItems = 'center';
                     document.body.style.height = '100vh';
-                    document.body.innerHTML = `<div style="text-align:center;padding:20px;"><h1>🔒 Access Denied</h1><button onclick="location.reload()" style="margin-top:10px;padding:5px 10px;">Retry</button></div>`;
+                    document.body.innerHTML = `
+                        <div class="text-center p-8 glass-card rounded-3xl">
+                            <h1 class="text-6xl mb-4">🔒</h1>
+                            <h2 class="text-2xl font-bold text-slate-800 mb-2">權限不足</h2>
+                            <p class="text-slate-500 mb-6">您輸入的密碼錯誤或無效。</p>
+                            <button onclick="location.reload()" class="bg-theme-600 text-white px-6 py-2 rounded-full hover:bg-theme-800 transition-colors">重新輸入</button>
+                        </div>`;
+                    return;
                 }
-            }, 100);
+                sessionStorage.setItem('dashboard_role', userRole);
+            }
+
+            isEditor = (userRole === 'editor');
+            document.body.style.display = 'block';
         })();
     </script>
+    <!-- ========================================== -->
 
-    <div id="sync-status" class="status-saved">
-        <div class="w-2 h-2 rounded-full bg-green-500" id="sync-dot"></div>
-        <span id="sync-text">已連線</span>
+    <!-- 頂部狀態與橫幅 (Top Banner) -->
+    <div class="pt-6 px-4 max-w-6xl mx-auto">
+        <div class="glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="absolute -right-10 -top-10 opacity-5 pointer-events-none">
+                <i data-lucide="sun" width="200" height="200"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="bg-theme-100 text-theme-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                        <i data-lucide="car" width="14"></i> 仲夏北陸自駕
+                    </span>
+                    <!-- 權限標籤 -->
+                    <span id="role-badge" class="text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1"></span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
+                    2026 名古屋 & 北陸之旅
+                </h1>
+                <p class="text-slate-500 mt-2 flex items-center gap-4 text-sm font-medium">
+                    <span class="flex items-center gap-1"><i data-lucide="calendar" width="16"></i> 07/14 - 07/23</span>
+                    <span class="flex items-center gap-1"><i data-lucide="users" width="16"></i> 5 People</span>
+                </p>
+            </div>
+            
+            <!-- 同步狀態 -->
+            <div id="sync-status" class="relative z-10 bg-white/80 px-4 py-2 rounded-2xl flex items-center gap-2 border border-slate-100 shadow-sm text-sm font-bold">
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-300" id="sync-dot"></div>
+                <span id="sync-text" class="text-slate-600">初始化中...</span>
+            </div>
+        </div>
     </div>
 
-    <header class="bg-teal-800 text-white p-6 shadow-lg relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-            <i data-lucide="sun" width="160" height="160"></i>
+    <!-- 懸浮置中導航列 (Floating Pill Navigation) -->
+    <div class="sticky top-4 z-40 my-6 px-4 flex justify-center">
+        <div class="glass-card p-1.5 rounded-full flex gap-1 shadow-lg border border-white">
+            <button onclick="switchTab('overview')" id="btn-overview" class="nav-btn active flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
+                <i data-lucide="layout-dashboard" width="18"></i> <span class="hidden sm:inline">儀表板</span>
+            </button>
+            <button onclick="switchTab('daily')" id="btn-daily" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
+                <i data-lucide="map" width="18"></i> <span class="hidden sm:inline">日程表</span>
+            </button>
+            <button onclick="switchTab('budget')" id="btn-budget" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
+                <i data-lucide="wallet" width="18"></i> <span class="hidden sm:inline">預算</span>
+            </button>
+            <button onclick="switchTab('advisories')" id="btn-advisories" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
+                <i data-lucide="info" width="18"></i> <span class="hidden sm:inline">資訊</span>
+            </button>
         </div>
-        <div class="max-w-6xl mx-auto relative z-10">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold tracking-wide mb-2 flex items-center gap-3">
-                        <i data-lucide="cloud-lightning" class="text-yellow-400"></i> 
-                        2026 仲夏北陸深度自駕之旅
-                    </h1>
-                    <p class="text-teal-100 flex items-center gap-2 text-sm md:text-base font-medium">
-                        <i data-lucide="calendar" width="16"></i> 2026/07/14 - 07/23 (10 Days)
-                        <span class="mx-2">|</span>
-                        <i data-lucide="users" width="16"></i> 5 People (Noah HEV)
-                    </p>
-                </div>
-            </div>
-        </div>
-    </header>
+    </div>
 
-    <main class="max-w-6xl mx-auto -mt-4 px-4 relative z-20">
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 relative z-20">
         
-        <div class="flex gap-1 overflow-x-auto no-scrollbar">
-            <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn active flex items-center gap-2 px-6 py-3 rounded-t-lg font-medium transition-colors whitespace-nowrap">
-                <i data-lucide="image" width="18"></i> 行程總覽
-            </button>
-            <button onclick="switchTab('daily')" id="btn-daily" class="tab-btn flex items-center gap-2 px-6 py-3 rounded-t-lg font-medium transition-colors whitespace-nowrap">
-                <i data-lucide="calendar-days" width="18"></i> 每日細節
-            </button>
-            <button onclick="switchTab('budget')" id="btn-budget" class="tab-btn flex items-center gap-2 px-6 py-3 rounded-t-lg font-medium transition-colors whitespace-nowrap">
-                <i data-lucide="calculator" width="18"></i> 預算估算
-            </button>
-            <button onclick="switchTab('advisories')" id="btn-advisories" class="tab-btn flex items-center gap-2 px-6 py-3 rounded-t-lg font-medium transition-colors whitespace-nowrap">
-                <i data-lucide="alert-triangle" width="18"></i> 注意事項
-            </button>
+        <!-- 1. 儀表板總覽 (Bento Box Overview) -->
+        <div id="tab-overview" class="tab-content active space-y-6">
+            
+            <!-- Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 大圖模塊 (Span 2) -->
+                <div class="md:col-span-2 glass-card rounded-3xl p-2 shadow-sm border border-white overflow-hidden flex flex-col justify-center bg-white">
+                    <img src="./20260714_0723_名古屋&北陸_Schedule.jpg" 
+                         alt="行程總覽圖" 
+                         class="w-full h-auto object-cover rounded-2xl max-h-[400px]"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display:none;" class="h-[300px] flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl">
+                        <i data-lucide="image-off" width="48" class="mb-3 opacity-50"></i>
+                        <p class="font-bold">等待上傳地圖</p>
+                        <p class="text-xs mt-1">請確保圖片與 HTML 同目錄</p>
+                    </div>
+                </div>
+
+                <!-- 資訊快覽模塊 (Vertical) -->
+                <div class="flex flex-col gap-6">
+                    <!-- 天數統計 -->
+                    <div class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4">
+                        <div class="bg-theme-100 p-4 rounded-2xl text-theme-600"><i data-lucide="calendar-days" width="28"></i></div>
+                        <div>
+                            <div class="text-3xl font-black text-slate-800">10<span class="text-lg font-medium text-slate-500"> 天</span></div>
+                            <div class="text-sm font-bold text-theme-600">5 個主要城市</div>
+                        </div>
+                    </div>
+                    <!-- 交通工具 -->
+                    <div class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4">
+                        <div class="bg-blue-100 p-4 rounded-2xl text-blue-600"><i data-lucide="car-front" width="28"></i></div>
+                        <div>
+                            <div class="text-xl font-black text-slate-800">Toyota Noah</div>
+                            <div class="text-sm font-bold text-blue-600">HEV 7人座 / 異地還車</div>
+                        </div>
+                    </div>
+                    <!-- 預算概覽 -->
+                    <div class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 flex-1">
+                        <div class="bg-orange-100 p-4 rounded-2xl text-orange-600"><i data-lucide="circle-dollar-sign" width="28"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 mb-1">預估總旅費 (TWD)</div>
+                            <div id="overview-budget-total" class="text-2xl font-black text-slate-800">計算中...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MapCode 導航庫 -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-white">
+                <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                    <i data-lucide="navigation" class="text-theme-500"></i> 重點導航庫 (Google Maps & MapCode)
+                </h3>
+                <div id="mapcode-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <!-- JS 渲染 -->
+                </div>
+            </div>
         </div>
 
-        <div class="bg-white rounded-b-xl rounded-tr-xl shadow-xl min-h-[600px] p-4 md:p-8 border border-gray-100">
-            
-            <div id="tab-overview" class="tab-content active">
-                <div class="flex items-center gap-2 mb-6 border-b pb-2 border-gray-200">
-                    <div class="p-2 bg-teal-100 rounded-lg text-teal-700">
-                        <i data-lucide="map" width="20"></i>
+        <!-- 2. 每日日程 (Modern Timeline) -->
+        <div id="tab-daily" class="tab-content">
+            <div class="glass-card rounded-3xl p-4 md:p-8 border border-white">
+                <div class="flex justify-between items-end mb-8 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800">詳細日程</h2>
+                        <p class="text-sm text-slate-500 mt-1" id="daily-edit-hint">點擊行程文字即可編輯 (僅限編輯者)</p>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800">10天自駕路線概覽</h2>
+                    <button onclick="toggleAllDays()" class="text-theme-600 hover:bg-theme-50 px-4 py-2 rounded-full font-bold text-sm transition-colors">
+                        展開 / 收合
+                    </button>
                 </div>
-                <div class="w-full bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm mb-8 flex justify-center items-center min-h-[300px]">
-                    <img src="./20260714_0723_名古屋&北陸_Schedule.jpg" 
-                         alt="行程總覽圖片" 
-                         class="w-full h-auto object-contain max-h-screen"
-                         onerror="this.onerror=null; this.src=''; this.parentElement.innerHTML='<div class=\'text-center p-8 text-gray-500\'><i data-lucide=\'image-off\' class=\'mx-auto mb-2 text-gray-400\' width=\'48\'></i><p class=\'font-bold\'>無行程地圖圖片</p><p class=\'text-sm\'>如需顯示地圖，請上傳對應的圖片檔案至 Repository 並更改 img src。</p></div>'; lucide.createIcons();">
-                </div>
-                <div class="bg-teal-50 p-6 rounded-lg border border-teal-100 mt-8">
-                    <h3 class="font-bold text-teal-800 mb-4 flex items-center gap-2">
-                        <i data-lucide="car" width="18"></i> 重點自駕路段提醒 (Google Map 導航 / MapCode)
-                    </h3>
-                    <div id="mapcode-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm"></div>
+                
+                <div id="daily-container" class="space-y-6">
+                    <!-- JS 渲染 -->
                 </div>
             </div>
+        </div>
 
-            <div id="tab-daily" class="tab-content">
-                <div class="flex justify-between items-center mb-6 border-b pb-2 border-gray-200">
-                    <div class="flex items-center gap-2">
-                        <div class="p-2 bg-teal-100 rounded-lg text-teal-700">
-                            <i data-lucide="calendar-check" width="20"></i>
-                        </div>
-                        <h2 class="text-xl font-bold text-gray-800">每日詳細日程表</h2>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="text-xs text-gray-400 hidden sm:inline-block">提示：點擊文字編輯，藍色圖標導航</span>
-                        <button onclick="toggleAllDays()" class="text-sm text-teal-600 hover:underline font-medium">展開/收合全部</button>
-                    </div>
+        <!-- 3. 預算估算 (Budget Table) -->
+        <div id="tab-budget" class="tab-content">
+            <div class="glass-card rounded-3xl p-4 md:p-8 border border-white">
+                <div class="flex items-center gap-2 mb-6">
+                    <div class="p-2 bg-theme-100 rounded-xl text-theme-600"><i data-lucide="calculator" width="24"></i></div>
+                    <h2 class="text-2xl font-black text-slate-800">旅費預算表 (TWD)</h2>
                 </div>
-                <div id="daily-container" class="space-y-4"></div>
-            </div>
-
-            <div id="tab-budget" class="tab-content">
-                <div class="flex items-center gap-2 mb-6 border-b pb-2 border-gray-200">
-                    <div class="p-2 bg-teal-100 rounded-lg text-teal-700">
-                        <i data-lucide="calculator" width="20"></i>
-                    </div>
-                    <h2 class="text-xl font-bold text-gray-800">旅費預算估算表 (TWD)</h2>
-                </div>
-                <div class="bg-white p-2 md:p-6 rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[600px]">
+                
+                <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100">
+                    <table class="w-full text-left">
                         <thead>
-                            <tr class="border-b-2 border-teal-100 text-gray-600">
-                                <th class="py-3 pl-2">項目分類</th>
-                                <th class="py-3 w-40">金額 (TWD)</th>
-                                <th class="py-3">備註說明</th>
-                                <th class="py-3 w-10"></th>
+                            <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
+                                <th class="py-4 pl-6 font-bold w-1/4">項目分類</th>
+                                <th class="py-4 font-bold w-1/4">預估金額 (TWD)</th>
+                                <th class="py-4 font-bold">備註說明</th>
+                                <th class="py-4 w-12"></th>
                             </tr>
                         </thead>
-                        <tbody id="budget-tbody"></tbody>
-                        <tfoot>
-                            <tr class="bg-teal-50 font-bold text-teal-900">
-                                <td class="py-3 pl-4">總計預估</td>
-                                <td class="py-3 pr-2 text-right font-mono text-lg" id="budget-total">NT$ 0</td>
+                        <tbody id="budget-tbody" class="divide-y divide-slate-50">
+                            <!-- JS 渲染 -->
+                        </tbody>
+                        <tfoot class="bg-theme-50">
+                            <tr>
+                                <td class="py-5 pl-6 font-black text-theme-800">總計</td>
+                                <td class="py-5 font-black text-2xl text-theme-600 font-mono" id="budget-total">NT$ 0</td>
                                 <td colspan="2"></td>
                             </tr>
                         </tfoot>
                     </table>
-                    <button onclick="addBudgetItem()" class="mt-4 text-sm text-teal-600 hover:text-teal-800 font-medium flex items-center gap-1 px-2 py-1 hover:bg-teal-50 rounded">
+                </div>
+                <!-- 只有 Editor 看得到新增按鈕 -->
+                <div id="budget-add-container" class="mt-4 hidden">
+                    <button onclick="addBudgetItem()" class="flex items-center gap-2 text-theme-600 hover:bg-theme-50 px-4 py-2 rounded-full font-bold text-sm transition-colors">
                         <i data-lucide="plus" width="16"></i> 新增預算項目
                     </button>
                 </div>
             </div>
+        </div>
 
-            <div id="tab-advisories" class="tab-content">
-                <div class="flex items-center gap-2 mb-6 border-b pb-2 border-gray-200">
-                    <div class="p-2 bg-teal-100 rounded-lg text-teal-700">
-                        <i data-lucide="thermometer-sun" width="20"></i>
+        <!-- 4. 注意事項 (Advisories) -->
+        <div id="tab-advisories" class="tab-content space-y-6">
+            <!-- 氣溫圖表 -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 border border-white">
+                <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+                    <i data-lucide="thermometer-sun" class="text-orange-500"></i> 7月氣溫對比：名古屋 vs 高海拔山區
+                </h3>
+                <div class="relative h-[280px] w-full"><canvas id="tempChart"></canvas></div>
+            </div>
+            
+            <!-- 建議卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Outfit -->
+                <div class="glass-card rounded-3xl p-6 border border-white">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-black text-lg text-orange-600 flex items-center gap-2">
+                            <i data-lucide="shirt" width="20"></i> 避暑與穿搭建議
+                        </h3>
+                        <button id="btn-add-outfit" onclick="addAdvisoryItem('outfit')" class="hidden bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-full text-xs font-bold transition-colors">+ 新增</button>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800">氣候與注意事項</h2>
+                    <ul id="outfit-list" class="space-y-4"></ul>
                 </div>
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-8">
-                    <h3 class="font-bold text-gray-700 mb-4">7月氣溫對比：名古屋市區 vs 高海拔山區 (°C)</h3>
-                    <div class="relative h-[300px] w-full"><canvas id="tempChart"></canvas></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-lg text-orange-500 flex items-center gap-2"><i data-lucide="shirt" width="20"></i> 夏季避暑與穿搭</h3>
-                            <button onclick="addAdvisoryItem('outfit')" class="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-2 py-1 rounded transition-colors">+ 新增建議</button>
-                        </div>
-                        <ul id="outfit-list" class="space-y-3 text-sm text-gray-700"></ul>
+                <!-- Drive -->
+                <div class="glass-card rounded-3xl p-6 border border-white">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-black text-lg text-theme-700 flex items-center gap-2">
+                            <i data-lucide="car-front" width="20"></i> HEV 自駕提示
+                        </h3>
+                        <button id="btn-add-drive" onclick="addAdvisoryItem('drive')" class="hidden bg-theme-50 text-theme-600 hover:bg-theme-100 px-3 py-1.5 rounded-full text-xs font-bold transition-colors">+ 新增</button>
                     </div>
-                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-lg text-teal-700 flex items-center gap-2"><i data-lucide="car" width="20"></i> HEV 自駕與特殊地形</h3>
-                            <button onclick="addAdvisoryItem('drive')" class="text-xs bg-teal-50 text-teal-600 hover:bg-teal-100 px-2 py-1 rounded transition-colors">+ 新增注意</button>
-                        </div>
-                        <ul id="drive-list" class="space-y-3 text-sm text-gray-700"></ul>
-                    </div>
+                    <ul id="drive-list" class="space-y-4"></ul>
                 </div>
             </div>
-
         </div>
+
     </main>
 
+    <!-- Firebase & Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // =======================================================
-        // ⚠️ [Config Area] 請在此處填入您的 Firebase Config
+        // ⚠️ [Config Area] Firebase Config (已帶入您的金鑰)
         // =======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyBQagGqyfWGkwwibgsnyZ69eNRjOHIenM0",
@@ -270,15 +384,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const DOC_ID = "summer_nagoya_trip"; 
 
+        // Global State
         let ITINERARY_DATA = [];
         let OUTFIT_TIPS = [];
         let DRIVE_TIPS = [];
         let budgetItems = [];
-        const DOC_ID = "summer_nagoya_trip"; // 更改了 Document ID 以防與舊行程衝突
 
         // -----------------------------------------------------
-        // DEFAULT DATA (Updated for Summer Nagoya & Hokuriku)
+        // DEFAULT DATA (Fallback)
         // -----------------------------------------------------
         const DEFAULT_ITINERARY_DATA = [
             { day: 1, date: "2026/07/14 (二)", city: "Nagoya", title: "機場整備與都會機能確認", icon: "plane", weather: "酷熱 34°C", highlights: ["IT206 抵達 NGO", "領取 Noah HEV", "大須觀音/榮商圈"], stay: "Minn STATION Ai Nagoya", transport: "飛機, 自駕 (45km)", details: [ { id: 101, time: "09:00", action: "虎航 IT206 起飛 (TPE 第一航廈)", type: "transport", location: "Taiwan Taoyuan International Airport" }, { id: 102, time: "12:55", action: "抵達中部國際機場 (NGO)", type: "transport", location: "Chubu Centrair International Airport" }, { id: 103, time: "14:00", action: "Toyota Rent-a-Car 領車 (確認第3排與行李空間)", type: "transport", location: "Toyota Rent a Car Chubu International Airport" }, { id: 104, time: "16:00", action: "Minn STATION Ai Nagoya (自助報到 Check-in)", type: "stay", location: "Minn STATION Ai Nagoya" }, { id: 105, time: "17:00", action: "大須商店街 / 榮商圈 散策與採買", type: "shopping", location: "Osu Shopping Street" }, { id: 106, time: "19:00", action: "晚餐：熱田蓬萊軒 (鰻魚飯三吃)", type: "food", location: "Atsuta Horaiken Matsuzakaya" } ] },
@@ -294,22 +409,11 @@
         ];
 
         const MAP_CODES = {
-            "Toyota 中部機場店": "4 263 051*21",
-            "Minn STATION Ai": "11 254 366*00",
-            "吉卜力公園北口": "30 605 321*45",
-            "大江戶 Premium 下呂": "190 853 451*11",
-            "新穗高纜車": "898 083 151*66",
-            "匠の宿 深山桜庵": "620 621 120*11",
-            "Akandana 停車場(上高地)": "620 621 150*22",
-            "Fairfield 岐阜郡上": "403 402 120*33",
-            "福井恐龍博物館": "272 133 150*44",
-            "永平寺": "63 151 120*55",
-            "大江戶 山中 Grand": "120 151 120*66",
-            "越前松島水族館": "120 300 150*77",
-            "千里濱沙灘入口": "120 500 100*99",
-            "Hyatt House 金澤": "41 528 251*10",
-            "那谷寺": "120 100 100*22",
-            "小松之杜": "120 150 150*33"
+            "Toyota 中部機場店": "4 263 051*21", "Minn STATION Ai": "11 254 366*00", "吉卜力公園北口": "30 605 321*45",
+            "大江戶 Premium 下呂": "190 853 451*11", "新穗高纜車": "898 083 151*66", "匠の宿 深山桜庵": "620 621 120*11",
+            "Akandana 停車場(上高地)": "620 621 150*22", "Fairfield 岐阜郡上": "403 402 120*33", "福井恐龍博物館": "272 133 150*44",
+            "永平寺": "63 151 120*55", "大江戶 山中 Grand": "120 151 120*66", "越前松島水族館": "120 300 150*77",
+            "千里濱沙灘入口": "120 500 100*99", "Hyatt House 金澤": "41 528 251*10", "那谷寺": "120 100 100*22", "小松之杜": "120 150 150*33"
         };
 
         const DEFAULT_OUTFIT_TIPS = [
@@ -323,7 +427,7 @@
             {id: 1, text: "<strong>長下坡駕駛：</strong>從郡上前往福井 (Day 6) 會有較長下坡，請善用 HEV 油電系統的「B檔 (動能回收檔)」以減輕煞車負擔。"},
             {id: 2, text: "<strong>山區道路：</strong>飛驒川沿岸 (國道41號) 隧道多且有彎道，請務必開啟車輛「自動頭燈」功能。"},
             {id: 3, text: "<strong>沙灘駕駛守則：</strong>進入千里濱沙灘公路 (Day 8) 時，請務必行駛於「深色、已被壓實」的沙面上，避免輪胎陷入鬆軟白沙中。"},
-            {id: 4, text: "<strong>車高限制：</strong>金澤 Hyatt House 配合的立體停車場限高 2.1m，Toyota Noah 車高約 1.9m，可安全進入，但請注意車頂天線。"}
+            {id: 4, text: "<strong>車高限制：</strong>金澤 Hyatt House 配合的立體停車場限高 2.1m，Noah 車高約 1.9m，可安全進入，但請注意天線。"}
         ];
 
         const DEFAULT_BUDGET_ITEMS = [
@@ -336,12 +440,13 @@
         ];
 
         // -----------------------------------------------------
-        // LOGIC & FUNCTIONS (Same robust Firebase logic)
+        // LOGIC & DATA BINDING
         // -----------------------------------------------------
 
         function debounce(func, timeout = 1000){
             let timer;
             return (...args) => {
+                if(!isEditor) return; // Viewer 不能寫入
                 clearTimeout(timer);
                 updateStatus('saving');
                 timer = setTimeout(() => { func.apply(this, args); }, timeout);
@@ -351,8 +456,7 @@
         const unsub = onSnapshot(doc(db, "trips", DOC_ID), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                const isPending = docSnap.metadata.hasPendingWrites;
-                if (isPending) return;
+                if (docSnap.metadata.hasPendingWrites) return; // 忽略本地尚未同步的快照 (防游標跳動)
 
                 ITINERARY_DATA = data.ITINERARY_DATA || [];
                 OUTFIT_TIPS = data.OUTFIT_TIPS || [];
@@ -370,6 +474,7 @@
         });
 
         const saveToCloud = debounce(async () => {
+            if(!isEditor) return;
             try {
                 await setDoc(doc(db, "trips", DOC_ID), {
                     ITINERARY_DATA, OUTFIT_TIPS, DRIVE_TIPS, budgetItems
@@ -387,34 +492,49 @@
             DRIVE_TIPS = DEFAULT_DRIVE_TIPS;
             budgetItems = DEFAULT_BUDGET_ITEMS;
             renderAll();
-            const syncText = document.getElementById('sync-text');
-            if (syncText) syncText.innerText = "預設模式 (編輯後才會同步)";
+            document.getElementById('sync-text').innerText = "載入預設資料";
         }
 
         function updateStatus(status) {
-            const el = document.getElementById('sync-status');
             const dot = document.getElementById('sync-dot');
             const text = document.getElementById('sync-text');
-            
-            el.className = ''; 
             if (status === 'saved') {
-                el.classList.add('status-saved');
-                dot.className = 'w-2 h-2 rounded-full bg-green-500';
-                text.innerText = '雲端已同步';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+                text.innerText = isEditor ? '雲端已同步' : '即時檢視中';
             } else if (status === 'saving') {
-                el.classList.add('status-saving');
-                dot.className = 'w-2 h-2 rounded-full bg-yellow-500 animate-pulse';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
                 text.innerText = '儲存中...';
             } else {
-                el.classList.add('status-error');
-                dot.className = 'w-2 h-2 rounded-full bg-red-500';
-                text.innerText = '同步失敗';
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                text.innerText = '離線/失敗';
             }
         }
 
+        // --- Role Based UI Application ---
+        function applyRoleUI() {
+            // Role Badge
+            const badge = document.getElementById('role-badge');
+            if (isEditor) {
+                badge.innerHTML = `<i data-lucide="edit-3" width="12"></i> 編輯模式`;
+                badge.className = "text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 bg-amber-50 text-amber-700 border-amber-200";
+                document.getElementById('daily-edit-hint').style.display = 'block';
+                document.getElementById('budget-add-container').classList.remove('hidden');
+                document.getElementById('btn-add-outfit').classList.remove('hidden');
+                document.getElementById('btn-add-drive').classList.remove('hidden');
+            } else {
+                badge.innerHTML = `<i data-lucide="eye" width="12"></i> 唯讀模式`;
+                badge.className = "text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 bg-slate-100 text-slate-600 border-slate-200";
+                document.getElementById('daily-edit-hint').style.display = 'none';
+                document.getElementById('budget-add-container').classList.add('hidden');
+                document.getElementById('btn-add-outfit').classList.add('hidden');
+                document.getElementById('btn-add-drive').classList.add('hidden');
+            }
+        }
+
+        // --- ACTIONS ---
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
             document.getElementById(`btn-${tabId}`).classList.add('active');
         }
@@ -424,10 +544,7 @@
             const isHidden = firstDay && firstDay.classList.contains('hidden');
             ITINERARY_DATA.forEach(day => {
                 const el = document.getElementById(`day-content-${day.day}`);
-                if(el) {
-                    if(isHidden) el.classList.remove('hidden');
-                    else el.classList.add('hidden');
-                }
+                if(el) isHidden ? el.classList.remove('hidden') : el.classList.add('hidden');
             });
             lucide.createIcons();
         }
@@ -443,136 +560,127 @@
             window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
         }
 
+        // Data Mutators (Guarded by isEditor inside saveToCloud)
         window.updateDailyDetail = function(dayId, detailId, field, value) {
-            const day = ITINERARY_DATA.find(d => d.day === dayId);
-            const detail = day.details.find(d => d.id === detailId);
+            if(!isEditor) return;
+            const detail = ITINERARY_DATA.find(d => d.day === dayId)?.details.find(d => d.id === detailId);
             if (detail) { detail[field] = value; saveToCloud(); }
         }
-
         window.addDailyDetail = function(dayId) {
-            const day = ITINERARY_DATA.find(d => d.day === dayId);
-            day.details.push({ id: Date.now(), time: "00:00", action: "新行程", type: "activity", location: "" });
-            saveToCloud();
-            renderDaily();
-            const el = document.getElementById(`day-content-${dayId}`);
-            if(el) el.classList.remove('hidden');
-            lucide.createIcons();
+            if(!isEditor) return;
+            ITINERARY_DATA.find(d => d.day === dayId)?.details.push({ id: Date.now(), time: "00:00", action: "新行程", type: "activity", location: "" });
+            saveToCloud(); renderDaily();
+            document.getElementById(`day-content-${dayId}`).classList.remove('hidden');
         }
-
         window.removeDailyDetail = function(dayId, detailId) {
-            if(confirm('刪除此行程？')) {
-                const day = ITINERARY_DATA.find(d => d.day === dayId);
-                day.details = day.details.filter(d => d.id !== detailId);
-                saveToCloud();
-                renderDaily();
-                const el = document.getElementById(`day-content-${dayId}`);
-                if(el) el.classList.remove('hidden');
-                lucide.createIcons();
-            }
+            if(!isEditor || !confirm('刪除此行程？')) return;
+            const day = ITINERARY_DATA.find(d => d.day === dayId);
+            day.details = day.details.filter(d => d.id !== detailId);
+            saveToCloud(); renderDaily();
+            document.getElementById(`day-content-${dayId}`).classList.remove('hidden');
         }
 
         window.updateBudget = function(id, field, value) {
-            const idx = budgetItems.findIndex(i => i.id === id);
-            if(idx !== -1) {
-                budgetItems[idx][field] = field === 'amount' ? Number(value) : value;
+            if(!isEditor) return;
+            const item = budgetItems.find(i => i.id === id);
+            if(item) {
+                item[field] = field === 'amount' ? Number(value) : value;
                 saveToCloud();
                 if(field === 'amount') {
                      const total = budgetItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-                     const totalEl = document.getElementById('budget-total');
-                     if(totalEl) totalEl.innerText = 'NT$ ' + total.toLocaleString();
+                     document.getElementById('budget-total').innerText = 'NT$ ' + total.toLocaleString();
+                     document.getElementById('overview-budget-total').innerText = 'NT$ ' + total.toLocaleString();
                 }
             }
         }
-
-        window.removeBudget = function(id) {
-            budgetItems = budgetItems.filter(i => i.id !== id);
-            saveToCloud();
-            renderBudget();
-        }
-
-        window.addBudgetItem = function() {
-            budgetItems.push({ id: Date.now(), category: "新項目", amount: 0, note: "" });
-            saveToCloud();
-            renderBudget();
-        }
+        window.removeBudget = function(id) { if(!isEditor) return; budgetItems = budgetItems.filter(i => i.id !== id); saveToCloud(); renderBudget(); }
+        window.addBudgetItem = function() { if(!isEditor) return; budgetItems.push({ id: Date.now(), category: "新項目", amount: 0, note: "" }); saveToCloud(); renderBudget(); }
 
         window.updateAdvisory = function(type, id, newText) {
+            if(!isEditor) return;
             const list = type === 'outfit' ? OUTFIT_TIPS : DRIVE_TIPS;
             const item = list.find(i => i.id === id);
             if(item) { item.text = newText; saveToCloud(); }
         }
-
         window.addAdvisoryItem = function(type) {
-            const list = type === 'outfit' ? OUTFIT_TIPS : DRIVE_TIPS;
-            list.push({ id: Date.now(), text: "編輯新建議..." });
-            saveToCloud();
-            renderAdvisories();
+            if(!isEditor) return;
+            (type === 'outfit' ? OUTFIT_TIPS : DRIVE_TIPS).push({ id: Date.now(), text: "編輯新建議..." });
+            saveToCloud(); renderAdvisories();
         }
-
         window.removeAdvisory = function(type, id) {
+            if(!isEditor) return;
             if(type === 'outfit') OUTFIT_TIPS = OUTFIT_TIPS.filter(i => i.id !== id);
             else DRIVE_TIPS = DRIVE_TIPS.filter(i => i.id !== id);
-            saveToCloud();
-            renderAdvisories();
+            saveToCloud(); renderAdvisories();
         }
 
-        // --- RENDER FUNCTIONS ---
+        // --- RENDERERS ---
         function renderAll() {
             renderDaily();
             renderMapCodes();
             renderBudget();
             renderAdvisories();
+            applyRoleUI();
             lucide.createIcons();
         }
 
         function renderDaily() {
             const container = document.getElementById('daily-container');
             if(!container) return;
+            
+            const editAttr = isEditor ? 'contenteditable="true"' : '';
+            
             container.innerHTML = ITINERARY_DATA.map(day => `
-                <div class="border border-gray-200 rounded-lg overflow-hidden transition-all hover:border-teal-300">
-                    <div onclick="toggleDay(${day.day})" class="flex flex-col md:flex-row md:items-center p-4 bg-gray-50 cursor-pointer hover:bg-teal-50/50 select-none">
-                        <div class="flex items-center gap-4 flex-1">
-                            <div class="bg-teal-600 text-white w-12 h-12 rounded-lg flex flex-col items-center justify-center shrink-0 shadow-sm">
-                                <span class="text-xs font-light">Day</span>
-                                <span class="text-xl font-bold leading-none">${day.day}</span>
+                <div class="glass-card rounded-2xl overflow-hidden transition-all border border-slate-100 hover:border-theme-300">
+                    <div onclick="toggleDay(${day.day})" class="flex flex-col md:flex-row md:items-center p-5 bg-white/50 cursor-pointer hover:bg-theme-50/50 select-none">
+                        <div class="flex items-center gap-5 flex-1">
+                            <div class="bg-theme-600 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-md">
+                                <span class="text-[10px] font-bold uppercase tracking-wider opacity-80">Day</span>
+                                <span class="text-2xl font-black leading-none">${day.day}</span>
                             </div>
                             <div>
-                                <h3 class="font-bold text-lg text-gray-800">${day.title}</h3>
-                                <div class="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                                <h3 class="font-black text-xl text-slate-800">${day.title}</h3>
+                                <div class="flex items-center gap-3 text-sm font-bold text-slate-500 mt-1.5">
                                     <span>${day.date}</span>
-                                    <span class="flex items-center gap-1"><i data-lucide="map-pin" width="12"></i> ${day.city}</span>
-                                    <span class="flex items-center gap-1 bg-white px-2 rounded-full shadow-sm"><i data-lucide="${day.icon}" width="12"></i> ${day.weather}</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="map-pin" width="14"></i> ${day.city}</span>
+                                    <span class="flex items-center gap-1 bg-white/80 px-2.5 py-0.5 rounded-full text-slate-600 border border-slate-200 shadow-sm"><i data-lucide="${day.icon}" width="12"></i> ${day.weather}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center gap-4 mt-3 md:mt-0 justify-between md:justify-end w-full md:w-auto">
                             <div class="text-right hidden md:block">
-                                <div class="text-xs text-gray-400">住宿</div>
-                                <div class="text-sm font-medium text-gray-700 truncate max-w-[150px]">${day.stay}</div>
+                                <div class="text-xs font-bold text-slate-400">STAY</div>
+                                <div class="text-sm font-bold text-slate-700 truncate max-w-[160px]">${day.stay}</div>
                             </div>
-                            <div class="text-gray-400"><i data-lucide="chevron-down" width="20"></i></div>
+                            <div class="text-slate-400 bg-slate-100 p-2 rounded-full"><i data-lucide="chevron-down" width="20"></i></div>
                         </div>
                     </div>
-                    <div id="day-content-${day.day}" class="hidden p-4 bg-white border-t border-gray-100">
-                        <div class="relative border-l-2 border-teal-100 ml-3 pl-6 space-y-6 py-2">
-                            ${day.details.map(detail => `
-                                <div class="relative group hover:bg-gray-50 p-2 rounded -ml-2">
-                                    <div class="absolute -left-[23px] top-4 w-4 h-4 rounded-full border-2 border-white shadow-sm z-10 ${detail.type === 'transport' ? 'bg-gray-400' : detail.type === 'food' ? 'bg-orange-400' : detail.type === 'shopping' ? 'bg-pink-400' : 'bg-teal-500'}"></div>
-                                    <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 w-full">
-                                        <div contenteditable="true" onblur="updateDailyDetail(${day.day}, ${detail.id}, 'time', this.innerText)" class="font-mono text-sm font-bold text-gray-500 w-12 shrink-0 pt-0.5 border-b border-dashed border-transparent hover:border-gray-300">${detail.time}</div>
+                    
+                    <div id="day-content-${day.day}" class="hidden p-6 bg-white/60 border-t border-slate-100">
+                        <div class="relative ml-2 space-y-8 py-2">
+                            ${day.details.map(detail => {
+                                const colorClass = detail.type === 'transport' ? 'bg-slate-400' : detail.type === 'food' ? 'bg-orange-400' : detail.type === 'shopping' ? 'bg-pink-400' : 'bg-theme-500';
+                                return `
+                                <div class="timeline-item relative group hover:bg-white/80 p-3 rounded-2xl -ml-3 transition-colors">
+                                    <div class="timeline-line"></div>
+                                    <div class="absolute -left-[17px] top-4 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm z-10 ${colorClass}"></div>
+                                    <div class="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-5 w-full pl-6">
+                                        <div ${editAttr} onblur="updateDailyDetail(${day.day}, ${detail.id}, 'time', this.innerText)" class="font-mono text-sm font-black text-slate-500 w-12 shrink-0 pt-0.5">${detail.time}</div>
                                         <div class="flex-1 w-full">
-                                            <div contenteditable="true" onblur="updateDailyDetail(${day.day}, ${detail.id}, 'action', this.innerText)" class="font-medium text-gray-800 border-b border-dashed border-transparent hover:border-gray-300">${detail.action}</div>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <button onclick="event.stopPropagation(); openGoogleMaps('${detail.location || ''}')" class="text-xs text-teal-600 hover:text-teal-800 flex items-center gap-1 font-medium bg-teal-50 hover:bg-teal-100 px-1.5 py-0.5 rounded border border-teal-100"><i data-lucide="map-pin" width="12"></i></button>
-                                                <div contenteditable="true" onblur="updateDailyDetail(${day.day}, ${detail.id}, 'location', this.innerText)" class="text-xs text-gray-500 hover:text-teal-600 border-b border-dashed border-transparent hover:border-gray-300 min-w-[50px]">${detail.location || '新增地點...'}</div>
+                                            <div ${editAttr} onblur="updateDailyDetail(${day.day}, ${detail.id}, 'action', this.innerText)" class="font-bold text-slate-800 text-[15px]">${detail.action}</div>
+                                            <div class="flex items-center gap-2 mt-2">
+                                                <button onclick="event.stopPropagation(); openGoogleMaps('${detail.location || ''}')" class="text-xs text-blue-600 hover:text-white flex items-center gap-1 font-bold bg-blue-50 hover:bg-blue-500 px-2 py-1 rounded-lg border border-blue-100 transition-colors shadow-sm">
+                                                    <i data-lucide="map-pin" width="12"></i> ${detail.location ? '導航' : '無座標'}
+                                                </button>
+                                                <div ${editAttr} onblur="updateDailyDetail(${day.day}, ${detail.id}, 'location', this.innerText)" class="text-xs font-medium text-slate-400 hover:text-slate-600 min-w-[50px] truncate max-w-[200px]" title="${detail.location || ''}">${detail.location || (isEditor ? '新增座標地點...' : '')}</div>
                                             </div>
                                         </div>
-                                        <button onclick="removeDailyDetail(${day.day}, ${detail.id})" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-opacity p-1"><i data-lucide="x" width="16"></i></button>
+                                        ${isEditor ? `<button onclick="removeDailyDetail(${day.day}, ${detail.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity p-2 bg-slate-50 rounded-full hover:bg-rose-50"><i data-lucide="trash-2" width="16"></i></button>` : ''}
                                     </div>
-                                </div>
-                            `).join('')}
+                                </div>`
+                            }).join('')}
                         </div>
-                        <button onclick="addDailyDetail(${day.day})" class="ml-8 mt-2 text-sm text-teal-500 hover:text-teal-700 flex items-center gap-1 px-2 py-1 hover:bg-teal-50 rounded"><i data-lucide="plus" width="14"></i> 新增行程</button>
+                        ${isEditor ? `<button onclick="addDailyDetail(${day.day})" class="ml-5 mt-6 text-sm text-theme-600 hover:text-theme-800 flex items-center gap-1 font-bold px-4 py-2 bg-white rounded-full border border-theme-100 shadow-sm hover:shadow transition-all"><i data-lucide="plus" width="16"></i> 新增行程區塊</button>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -582,9 +690,13 @@
             const container = document.getElementById('mapcode-grid');
             if(!container) return;
             container.innerHTML = Object.entries(MAP_CODES).map(([name, code]) => `
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded shadow-sm border border-gray-100 gap-2">
-                    <button onclick="openGoogleMaps('${name}')" class="font-medium text-teal-600 hover:text-teal-800 flex items-center gap-1 transition-colors text-left"><i data-lucide="map-pin" width="16"></i> ${name}</button>
-                    <code class="bg-gray-100 px-2 py-1 rounded text-gray-600 font-mono select-all cursor-pointer hover:bg-gray-200 text-xs sm:text-sm whitespace-nowrap">${code}</code>
+                <div class="flex flex-col justify-between bg-white/80 p-4 rounded-2xl border border-slate-100 shadow-sm gap-3 hover:shadow-md transition-shadow">
+                    <button onclick="openGoogleMaps('${name}')" class="font-bold text-slate-700 hover:text-theme-600 flex items-start gap-2 text-left">
+                        <i data-lucide="map-pin" width="18" class="shrink-0 mt-0.5 text-theme-500"></i> <span class="leading-tight">${name}</span>
+                    </button>
+                    <div class="flex justify-end">
+                        <code class="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600 font-mono font-bold select-all cursor-pointer hover:bg-slate-200 text-xs shadow-inner">${code}</code>
+                    </div>
                 </div>
             `).join('');
         }
@@ -592,24 +704,39 @@
         function renderBudget() {
             const tbody = document.getElementById('budget-tbody');
             if(!tbody) return;
+            const inputAttr = isEditor ? '' : 'disabled';
+            const trHoverClass = isEditor ? 'hover:bg-slate-50' : '';
+            
             tbody.innerHTML = budgetItems.map(item => `
-                <tr class="border-b border-gray-100 hover:bg-gray-50 group transition-colors">
-                    <td class="py-2 pl-2"><input type="text" value="${item.category}" onchange="updateBudget(${item.id}, 'category', this.value)" class="w-full bg-transparent focus:outline-none focus:ring-1 focus:ring-teal-300 rounded px-1 py-1"></td>
-                    <td class="py-2"><input type="number" value="${item.amount}" onchange="updateBudget(${item.id}, 'amount', this.value)" class="w-full bg-transparent font-mono text-right focus:outline-none focus:ring-1 focus:ring-teal-300 rounded px-1 py-1"></td>
-                    <td class="py-2 text-gray-500 text-sm"><input type="text" value="${item.note}" onchange="updateBudget(${item.id}, 'note', this.value)" class="w-full bg-transparent focus:outline-none focus:ring-1 focus:ring-teal-300 rounded px-1 py-1"></td>
-                    <td class="py-2 text-center"><button onclick="removeBudget(${item.id})" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity px-2">×</button></td>
+                <tr class="border-b border-slate-100 ${trHoverClass} group transition-colors">
+                    <td class="py-3 pl-6"><input type="text" value="${item.category}" onchange="updateBudget(${item.id}, 'category', this.value)" ${inputAttr} class="w-full bg-transparent font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-theme-300 rounded px-2 py-1 ${!isEditor && 'cursor-default'}"></td>
+                    <td class="py-3"><input type="number" value="${item.amount}" onchange="updateBudget(${item.id}, 'amount', this.value)" ${inputAttr} class="w-full bg-transparent font-mono font-bold text-slate-800 text-right focus:outline-none focus:ring-2 focus:ring-theme-300 rounded px-2 py-1 ${!isEditor && 'cursor-default'}"></td>
+                    <td class="py-3"><input type="text" value="${item.note}" onchange="updateBudget(${item.id}, 'note', this.value)" ${inputAttr} class="w-full bg-transparent font-medium text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-theme-300 rounded px-2 py-1 ${!isEditor && 'cursor-default'}"></td>
+                    <td class="py-3 text-center">
+                        ${isEditor ? `<button onclick="removeBudget(${item.id})" class="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-rose-50 rounded-full"><i data-lucide="x" width="16"></i></button>` : ''}
+                    </td>
                 </tr>
             `).join('');
+            
             const total = budgetItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
             document.getElementById('budget-total').innerText = 'NT$ ' + total.toLocaleString();
+            document.getElementById('overview-budget-total').innerText = 'NT$ ' + total.toLocaleString();
         }
 
         function renderAdvisories() {
             const outfitList = document.getElementById('outfit-list');
             const driveList = document.getElementById('drive-list');
+            const editAttr = isEditor ? 'contenteditable="true"' : '';
             
-            if(outfitList) outfitList.innerHTML = OUTFIT_TIPS.map(item => `<li class="flex gap-2 group"><span class="text-orange-400 font-bold shrink-0">•</span><span contenteditable="true" onblur="updateAdvisory('outfit', ${item.id}, this.innerHTML)" class="flex-1 border-b border-dashed border-transparent hover:border-gray-300">${item.text}</span><button onclick="removeAdvisory('outfit', ${item.id})" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-opacity px-1">×</button></li>`).join('');
-            if(driveList) driveList.innerHTML = DRIVE_TIPS.map(item => `<li class="flex gap-2 group"><span class="text-teal-500 font-bold shrink-0">•</span><span contenteditable="true" onblur="updateAdvisory('drive', ${item.id}, this.innerHTML)" class="flex-1 border-b border-dashed border-transparent hover:border-gray-300">${item.text}</span><button onclick="removeAdvisory('drive', ${item.id})" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-opacity px-1">×</button></li>`).join('');
+            const createLi = (item, type) => `
+                <li class="flex gap-3 group bg-white/60 p-3 rounded-xl border border-slate-100 shadow-sm">
+                    <span class="${type === 'outfit' ? 'text-orange-400' : 'text-theme-500'} font-black shrink-0 mt-0.5">•</span>
+                    <span ${editAttr} onblur="updateAdvisory('${type}', ${item.id}, this.innerHTML)" class="flex-1 text-slate-600 leading-relaxed">${item.text}</span>
+                    ${isEditor ? `<button onclick="removeAdvisory('${type}', ${item.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity p-1 self-start"><i data-lucide="x" width="16"></i></button>` : ''}
+                </li>`;
+
+            if(outfitList) outfitList.innerHTML = OUTFIT_TIPS.map(i => createLi(i, 'outfit')).join('');
+            if(driveList) driveList.innerHTML = DRIVE_TIPS.map(i => createLi(i, 'drive')).join('');
         }
 
         function initChart() {
@@ -620,17 +747,24 @@
                 data: { 
                     labels: ['早晨', '中午', '傍晚', '深夜'], 
                     datasets: [
-                        { label: '名古屋市區 (Nagoya)', data: [25, 35, 29, 26], borderColor: '#f97316', backgroundColor: '#f97316' }, 
-                        { label: '新穗高/上高地 (Mountains)', data: [15, 22, 18, 12], borderColor: '#0f766e', backgroundColor: '#0f766e' }
+                        { label: '名古屋市區 (Nagoya)', data: [25, 35, 29, 26], borderColor: '#f97316', backgroundColor: '#ffedd5', borderWidth: 3, tension: 0.4, fill: true }, 
+                        { label: '新穗高/上高地 (Mountains)', data: [15, 22, 18, 12], borderColor: '#0d9488', backgroundColor: '#ccfbf1', borderWidth: 3, tension: 0.4, fill: true }
                     ] 
                 }, 
-                options: { responsive: true, maintainAspectRatio: false } 
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { labels: { font: { family: "'Noto Sans TC', sans-serif", weight: 'bold' } } } },
+                    scales: { 
+                        y: { grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
+                        x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+                    }
+                } 
             });
         }
 
-        // --- INIT ---
+        // --- DOM Ready ---
         document.addEventListener('DOMContentLoaded', () => {
-            renderMapCodes();
+            renderMapCodes(); // Static render first
             lucide.createIcons();
             initChart();
         });
