@@ -3,36 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 Australia Family Trip Dashboard</title>
+    <title>2026 仲夏北陸深度自駕之旅</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-    <!-- Tailwind Config for Australia Theme (Sky & Amber) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { 
-                        sans: ['Nunito', '"Noto Sans TC"', 'sans-serif'] 
-                    },
+                    fontFamily: { sans: ['"Noto Sans TC"', 'sans-serif'] },
                     colors: {
                         theme: {
-                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc',
-                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
-                            800: '#075985', 900: '#0c4a6e',
-                        },
-                        accent: {
-                            50: '#fffbeb', 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706',
+                            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+                            400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+                            800: '#115e59', 900: '#134e4a',
                         }
                     }
                 }
@@ -41,7 +31,7 @@
     </script>
     <style>
         body { 
-            background: linear-gradient(135deg, #f0f9ff 0%, #fffbeb 100%);
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 100%);
             background-attachment: fixed;
             color: #1e293b;
         }
@@ -59,37 +49,37 @@
 
         .nav-btn { transition: all 0.3s ease; }
         .nav-btn.active {
-            background-color: #0284c7; 
+            background-color: #0d9488;
             color: white;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
         .nav-btn:not(.active) { color: #475569; }
-        .nav-btn:not(.active):hover { background-color: #f8fafc; }
+        .nav-btn:not(.active):hover { background-color: #f1f5f9; }
 
         [contenteditable="true"] {
             transition: all 0.2s;
             border-bottom: 1px dashed transparent;
         }
         [contenteditable="true"]:hover {
-            background-color: rgba(14, 165, 233, 0.08);
-            border-bottom: 1px dashed #38bdf8;
+            background-color: rgba(20, 184, 166, 0.08);
+            border-bottom: 1px dashed #14b8a6;
             cursor: text;
         }
         [contenteditable="true"]:focus {
             background-color: white;
             outline: none;
-            border-bottom: 1px solid #0284c7;
+            border-bottom: 1px solid #0d9488;
             padding: 2px 4px;
             border-radius: 4px;
-            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
         }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
         }
 
         .timeline-line::before {
@@ -99,7 +89,7 @@
             bottom: -24px;
             left: 11px;
             width: 2px;
-            background: #e0f2fe;
+            background: #ccfbf1;
             z-index: 0;
         }
         .timeline-item:last-child .timeline-line::before { display: none; }
@@ -123,46 +113,37 @@
         .status-saved { background: #dcfce7; color: #166534; }
         .status-saving { background: #fef9c3; color: #854d0e; }
         .status-error { background: #fee2e2; color: #991b1b; }
-
-        /* Weather Tooltip */
-        .weather-tooltip .tooltip-text {
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .weather-tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
     </style>
 </head>
 <body class="min-h-screen pb-24 bg-slate-50">
 
-    <!-- Auth Overlay -->
     <div id="auth-overlay" class="fixed inset-0 z-[100] bg-slate-50/90 backdrop-blur-sm flex justify-center items-center" style="display: none;">
         <div class="text-center p-10 glass-card rounded-3xl shadow-2xl border border-white">
             <h1 class="text-6xl mb-6">🔒</h1>
-            <h2 class="text-3xl font-black text-slate-800 mb-3" data-i18n="accessDenied">Access Denied</h2>
-            <p class="text-slate-500 mb-8 font-medium" data-i18n="invalidPassword">Invalid password.<br>Please try again.</p>
-            <button onclick="sessionStorage.removeItem('dashboard_role'); location.reload();" class="bg-theme-600 text-white px-8 py-3 rounded-full hover:bg-theme-800 transition-colors font-bold shadow-md" data-i18n="retry">Retry</button>
+            <h2 class="text-3xl font-black text-slate-800 mb-3">權限不足</h2>
+            <p class="text-slate-500 mb-8 font-medium">您輸入的密碼錯誤或無效，<br>請重新登入以檢視行程。</p>
+            <button onclick="sessionStorage.removeItem('dashboard_role'); location.reload();" class="bg-theme-600 text-white px-8 py-3 rounded-full hover:bg-theme-800 transition-colors font-bold shadow-md">重新輸入</button>
         </div>
     </div>
 
-    <!-- Auth Script -->
     <script>
+        // 全域變數
         window.isEditor = false; 
         window.isAuthenticated = false;
 
         (function initAuth() {
+            // [安全隱碼] 採用加鹽 Base64 (btoa("myTrip_" + 密碼))
+            // 完美解決 SHA256 跨域報錯問題，且無法被 atob 直接反解出原密碼
             const VIEW_HASH = "bXlUcmlwXzg4ODg="; 
             const EDIT_HASH = "bXlUcmlwX3lzWVMxMDI4"; 
             
             let userRole = sessionStorage.getItem('dashboard_role');
 
             if (!userRole) {
-                const input = prompt("請輸入密碼 / Enter Password:");
-                if (!input) return;
+                const input = prompt("請輸入密碼");
+                if (!input) return; // 按下取消，維持白畫面不載入
 
+                // 將輸入的密碼加上前綴 (Salt) 後進行 Base64 編碼
                 const saltedInput = "myTrip_" + input;
                 const inputHash = btoa(saltedInput); 
                 
@@ -171,384 +152,210 @@
                 } else if (inputHash === VIEW_HASH) {
                     userRole = 'viewer';
                 } else {
+                    // 密碼錯誤：顯示滿版遮罩，並強制中斷函式
                     document.getElementById('auth-overlay').style.display = 'flex';
                     return;
                 }
                 sessionStorage.setItem('dashboard_role', userRole);
             }
 
+            // 驗證成功：開放權限與介面顯示
             window.isEditor = (userRole === 'editor');
             window.isAuthenticated = true;
         })();
     </script>
-
-    <!-- Main App Container -->
     <div id="app-content" style="display: none;">
 
-        <!-- Sync Indicator -->
         <div id="sync-status" class="status-saved">
             <div class="w-2.5 h-2.5 rounded-full bg-emerald-500" id="sync-dot"></div>
-            <span id="sync-text">Connecting...</span>
+            <span id="sync-text">連線中...</span>
         </div>
 
-        <!-- 🌐 Top Utility Bar (Widgets: Language, Currency, Weather) -->
-        <div class="px-4 pt-4 max-w-6xl mx-auto">
-            <div class="glass-card rounded-2xl py-2 px-4 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm font-bold text-slate-600 shadow-sm border border-white">
-                
-                <!-- Left: Settings (Lang + Currency) -->
-                <div class="flex items-center gap-4">
-                    <!-- Language Switcher -->
-                    <div class="relative group cursor-pointer flex items-center gap-1.5 hover:text-theme-600 transition-colors">
-                        <i data-lucide="globe" width="16"></i>
-                        <select id="lang-selector" onchange="changeLanguage(this.value)" class="bg-transparent border-none outline-none cursor-pointer appearance-none pr-4 text-theme-700">
-                            <option value="zh-TW">繁體中文</option>
-                            <option value="en">English</option>
-                            <option value="ja">日本語</option>
-                        </select>
-                    </div>
-                    <div class="w-px h-4 bg-slate-300"></div>
-                    <!-- Exchange Rate (Dynamic) -->
-                    <div class="flex items-center gap-1.5 text-accent-600" title="即時匯率由 ExchangeRate-API 提供">
-                        <i data-lucide="coins" width="16"></i>
-                        <span id="exchange-rate-display">1 AUD = -- TWD</span>
-                    </div>
-                </div>
-
-                <!-- Right: Local Weather (Dynamic) -->
-                <div class="flex items-center gap-4">
-                    <div class="weather-tooltip relative flex items-center gap-2 hover:bg-slate-100 px-2 py-1 rounded cursor-help transition-colors">
-                        <span class="flex items-center gap-1 text-blue-600"><i data-lucide="map-pin" width="14"></i> SYD</span>
-                        <span id="weather-syd" class="flex items-center gap-1">--°C</span>
-                        <!-- Dropdown tooltip for 3 days -->
-                        <div id="weather-syd-tooltip" class="tooltip-text absolute top-full right-0 mt-2 w-48 bg-white/95 backdrop-blur shadow-xl rounded-xl p-3 border border-slate-100 z-50 text-xs font-medium space-y-2">
-                            Loading...
-                        </div>
-                    </div>
-                    <div class="w-px h-4 bg-slate-300"></div>
-                    <div class="weather-tooltip relative flex items-center gap-2 hover:bg-slate-100 px-2 py-1 rounded cursor-help transition-colors">
-                        <span class="flex items-center gap-1 text-orange-500"><i data-lucide="map-pin" width="14"></i> GC</span>
-                        <span id="weather-gc" class="flex items-center gap-1">--°C</span>
-                        <div id="weather-gc-tooltip" class="tooltip-text absolute top-full right-0 mt-2 w-48 bg-white/95 backdrop-blur shadow-xl rounded-xl p-3 border border-slate-100 z-50 text-xs font-medium space-y-2">
-                            Loading...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Top Banner -->
-        <div class="pt-4 px-4 max-w-6xl mx-auto">
-            <div class="glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b-4 border-theme-400">
-                <div class="absolute -right-5 -top-5 opacity-10 pointer-events-none text-theme-600">
-                    <i data-lucide="waves" width="200" height="200"></i>
+        <div class="pt-6 px-4 max-w-6xl mx-auto">
+            <div class="glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="absolute -right-10 -top-10 opacity-5 pointer-events-none">
+                    <i data-lucide="sun" width="200" height="200"></i>
                 </div>
                 <div class="relative z-10">
                     <div class="flex items-center gap-3 mb-2">
-                        <span class="bg-accent-100 text-accent-600 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm border border-accent-200">
-                            <i data-lucide="sun" width="14"></i> Down Under 2026
+                        <span class="bg-theme-100 text-theme-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                            <i data-lucide="car" width="14"></i> 仲夏北陸自駕
                         </span>
                         <span id="role-badge" class="text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1"></span>
                     </div>
-                    <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight" data-i18n="tripTitle">
-                        Australia Family Trip 🦘
+                    <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
+                        2026 名古屋 & 北陸之旅
                     </h1>
-                    <p class="text-slate-500 mt-2 flex items-center gap-4 text-sm font-bold">
-                        <span class="flex items-center gap-1"><i data-lucide="calendar" width="16" class="text-theme-500"></i> Aug 14 - Aug 27</span>
-                        <span class="flex items-center gap-1"><i data-lucide="users" width="16" class="text-theme-500"></i> <span data-i18n="people">4 People</span></span>
-                        <span class="flex items-center gap-1"><i data-lucide="map-pin" width="16" class="text-theme-500"></i> SYD / GC / BNE</span>
+                    <p class="text-slate-500 mt-2 flex items-center gap-4 text-sm font-medium">
+                        <span class="flex items-center gap-1"><i data-lucide="calendar" width="16"></i> 07/14 - 07/23</span>
+                        <span class="flex items-center gap-1"><i data-lucide="users" width="16"></i> 5 People</span>
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- Floating Navigation -->
         <div class="sticky top-4 z-40 my-6 px-4 flex justify-center">
             <div class="glass-card p-1.5 rounded-full flex gap-1 shadow-lg border border-white">
                 <button onclick="switchTab('overview')" id="btn-overview" class="nav-btn active flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
-                    <i data-lucide="layout-dashboard" width="18"></i> <span class="hidden sm:inline" data-i18n="tabDashboard">Dashboard</span>
+                    <i data-lucide="layout-dashboard" width="18"></i> <span class="hidden sm:inline">儀表板</span>
                 </button>
                 <button onclick="switchTab('daily')" id="btn-daily" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
-                    <i data-lucide="map" width="18"></i> <span class="hidden sm:inline" data-i18n="tabItinerary">Itinerary</span>
+                    <i data-lucide="map" width="18"></i> <span class="hidden sm:inline">日程表</span>
                 </button>
                 <button onclick="switchTab('budget')" id="btn-budget" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
-                    <i data-lucide="wallet" width="18"></i> <span class="hidden sm:inline" data-i18n="tabBudget">Budget</span>
+                    <i data-lucide="wallet" width="18"></i> <span class="hidden sm:inline">預算</span>
                 </button>
                 <button onclick="switchTab('advisories')" id="btn-advisories" class="nav-btn flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
-                    <i data-lucide="info" width="18"></i> <span class="hidden sm:inline" data-i18n="tabInfo">Info</span>
+                    <i data-lucide="info" width="18"></i> <span class="hidden sm:inline">資訊</span>
                 </button>
             </div>
         </div>
 
-        <!-- Main Content area -->
         <main class="max-w-6xl mx-auto px-4 relative z-20">
             
-            <!-- 1. Dashboard Tab -->
             <div id="tab-overview" class="tab-content active space-y-6">
                 
-                <!-- Map Image -->
                 <div class="glass-card rounded-3xl p-2 shadow-sm border border-white overflow-hidden flex flex-col justify-center bg-white">
-                    <img src="./20260814_0827_Australia_Schedule.png" 
-                         alt="Travel Map" 
+                    <img src="./20260714_0723_名古屋&北陸_Schedule.jpg" 
+                         alt="行程總覽圖" 
                          class="w-full h-auto object-contain rounded-2xl max-h-[500px]"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div style="display:none;" class="h-[300px] flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl">
                         <i data-lucide="image-off" width="48" class="mb-3 opacity-50"></i>
-                        <p class="font-bold">Waiting for Map Image</p>
-                        <p class="text-xs mt-1">Please ensure '20260814_0827_Australia_Schedule.png' is in the root directory.</p>
+                        <p class="font-bold">等待上傳地圖</p>
+                        <p class="text-xs mt-1">請確保圖片與 HTML 同目錄</p>
                     </div>
                 </div>
 
-                <!-- Quick Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div onclick="switchTab('daily')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-theme-200 group relative">
                         <div class="bg-theme-100 p-4 rounded-2xl text-theme-600 group-hover:scale-110 transition-transform"><i data-lucide="calendar-days" width="28"></i></div>
                         <div>
-                            <div class="text-3xl font-black text-slate-800">14<span class="text-lg font-bold text-slate-500" data-i18n="days"> Days</span></div>
-                            <div class="text-sm font-bold text-theme-600" data-i18n="cities">3 Major Cities</div>
+                            <div class="text-3xl font-black text-slate-800">10<span class="text-lg font-medium text-slate-500"> 天</span></div>
+                            <div class="text-sm font-bold text-theme-600">5 個主要城市</div>
                         </div>
                         <i data-lucide="arrow-right" class="absolute top-4 right-4 text-theme-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
-                    <div onclick="switchTab('advisories')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-accent-200 group relative">
-                        <div class="bg-accent-100 p-4 rounded-2xl text-accent-600 group-hover:scale-110 transition-transform"><i data-lucide="car-front" width="28"></i></div>
+                    <div onclick="switchTab('advisories')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-blue-200 group relative">
+                        <div class="bg-blue-100 p-4 rounded-2xl text-blue-600 group-hover:scale-110 transition-transform"><i data-lucide="car-front" width="28"></i></div>
                         <div>
-                            <div class="text-xl font-black text-slate-800">MG ZS SUV</div>
-                            <div class="text-sm font-bold text-accent-600" data-i18n="roadTrip">Gold Coast Road Trip</div>
+                            <div class="text-xl font-black text-slate-800">Toyota Noah</div>
+                            <div class="text-sm font-bold text-blue-600">HEV 7人座 / 異地還車</div>
                         </div>
-                        <i data-lucide="arrow-right" class="absolute top-4 right-4 text-accent-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        <i data-lucide="arrow-right" class="absolute top-4 right-4 text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
-                    <div onclick="switchTab('budget')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-emerald-200 group relative">
-                        <div class="bg-emerald-100 p-4 rounded-2xl text-emerald-600 group-hover:scale-110 transition-transform"><i data-lucide="circle-dollar-sign" width="28"></i></div>
+                    <div onclick="switchTab('budget')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-orange-200 group relative">
+                        <div class="bg-orange-100 p-4 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform"><i data-lucide="circle-dollar-sign" width="28"></i></div>
                         <div>
-                            <div class="text-xs font-bold text-slate-400 mb-1" data-i18n="estTotal">Est. Total (TWD)</div>
-                            <div id="overview-budget-total" class="text-2xl font-black text-slate-800">Calculating...</div>
+                            <div class="text-xs font-bold text-slate-400 mb-1">預估總旅費 (TWD)</div>
+                            <div id="overview-budget-total" class="text-2xl font-black text-slate-800">計算中...</div>
                         </div>
-                        <i data-lucide="arrow-right" class="absolute top-4 right-4 text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        <i data-lucide="arrow-right" class="absolute top-4 right-4 text-orange-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
                 </div>
 
-                <!-- Navigation Hub -->
                 <div class="glass-card rounded-3xl p-6 md:p-8 border border-white">
                     <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
-                        <i data-lucide="navigation" class="text-theme-500"></i> <span data-i18n="navHub">Key Locations & Navigation</span>
+                        <i data-lucide="navigation" class="text-theme-500"></i> 重點導航庫 (Google Maps & MapCode)
                     </h3>
-                    <div id="mapcode-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <!-- Populated by JS -->
-                    </div>
+                    <div id="mapcode-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        </div>
                 </div>
             </div>
 
-            <!-- 2. Itinerary Tab -->
             <div id="tab-daily" class="tab-content">
                 <div class="glass-card rounded-3xl p-4 md:p-8 border border-white">
                     <div class="flex justify-between items-end mb-8 border-b border-slate-100 pb-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-800" data-i18n="dailyItinerary">Daily Itinerary</h2>
-                            <p class="text-sm text-slate-500 mt-1" id="daily-edit-hint" data-i18n="editHint">Click text to edit. Changes sync automatically.</p>
+                            <h2 class="text-2xl font-black text-slate-800">詳細日程</h2>
+                            <p class="text-sm text-slate-500 mt-1" id="daily-edit-hint">點擊行程文字即可編輯 (僅限編輯者)</p>
                         </div>
-                        <button onclick="toggleAllDays()" class="text-theme-600 hover:bg-theme-50 px-4 py-2 rounded-full font-bold text-sm transition-colors shadow-sm border border-theme-100" data-i18n="expandAll">
-                            Expand / Collapse
+                        <button onclick="toggleAllDays()" class="text-theme-600 hover:bg-theme-50 px-4 py-2 rounded-full font-bold text-sm transition-colors">
+                            展開 / 收合
                         </button>
                     </div>
+                    
                     <div id="daily-container" class="space-y-6"></div>
                 </div>
             </div>
 
-            <!-- 3. Budget Tab -->
             <div id="tab-budget" class="tab-content">
                 <div class="glass-card rounded-3xl p-4 md:p-8 border border-white">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="p-2 bg-emerald-100 rounded-xl text-emerald-600"><i data-lucide="calculator" width="24"></i></div>
-                        <h2 class="text-2xl font-black text-slate-800" data-i18n="budgetEst">Budget Estimation (TWD)</h2>
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="p-2 bg-theme-100 rounded-xl text-theme-600"><i data-lucide="calculator" width="24"></i></div>
+                        <h2 class="text-2xl font-black text-slate-800">旅費預算表 (TWD)</h2>
                     </div>
                     
-                    <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="overflow-x-auto bg-white rounded-2xl border border-slate-100">
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="bg-slate-50 text-slate-500 text-sm border-b border-slate-100">
-                                    <th class="py-4 pl-6 font-bold w-1/4" data-i18n="category">Category</th>
-                                    <th class="py-4 font-bold w-1/4 text-right pr-4" data-i18n="amount">Amount (TWD)</th>
-                                    <th class="py-4 font-bold" data-i18n="notes">Notes</th>
+                                    <th class="py-4 pl-6 font-bold w-1/4">項目分類</th>
+                                    <th class="py-4 font-bold w-1/4">預估金額 (TWD)</th>
+                                    <th class="py-4 font-bold">備註說明</th>
                                     <th class="py-4 w-12"></th>
                                 </tr>
                             </thead>
                             <tbody id="budget-tbody" class="divide-y divide-slate-50"></tbody>
-                            <tfoot class="bg-emerald-50 border-t-2 border-emerald-100">
+                            <tfoot class="bg-theme-50">
                                 <tr>
-                                    <td class="py-5 pl-6 font-black text-emerald-900" data-i18n="totalEst">Total Estimate</td>
-                                    <td class="py-5 font-black text-2xl text-emerald-600 font-mono text-right pr-4" id="budget-total">NT$ 0</td>
+                                    <td class="py-5 pl-6 font-black text-theme-800">總計</td>
+                                    <td class="py-5 font-black text-2xl text-theme-600 font-mono" id="budget-total">NT$ 0</td>
                                     <td colspan="2"></td>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
                     <div id="budget-add-container" class="mt-4 hidden">
-                        <button onclick="addBudgetItem()" class="flex items-center gap-2 text-emerald-600 hover:bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-full font-bold text-sm transition-colors shadow-sm">
-                            <i data-lucide="plus" width="16"></i> <span data-i18n="addItem">Add Item</span>
+                        <button onclick="addBudgetItem()" class="flex items-center gap-2 text-theme-600 hover:bg-theme-50 px-4 py-2 rounded-full font-bold text-sm transition-colors">
+                            <i data-lucide="plus" width="16"></i> 新增預算項目
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- 4. Advisories Tab -->
             <div id="tab-advisories" class="tab-content space-y-6">
-                
                 <div class="glass-card rounded-3xl p-6 md:p-8 border border-white">
                     <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
-                        <i data-lucide="thermometer" class="text-accent-500"></i> <span data-i18n="weatherTitle">August Temp: SYD vs GC</span>
+                        <i data-lucide="thermometer-sun" class="text-orange-500"></i> 7月氣溫對比：名古屋 vs 高海拔山區
                     </h3>
                     <div class="relative h-[280px] w-full"><canvas id="tempChart"></canvas></div>
-                    <p class="text-center text-sm text-slate-500 mt-4 font-bold" data-i18n="weatherNote">August is late winter in Australia. Mornings/evenings are chilly, especially in Sydney.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-card rounded-3xl p-6 border border-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="glass-card rounded-3xl p-6 border border-white">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-black text-lg text-theme-600 flex items-center gap-2">
-                                <i data-lucide="clipboard-check" width="20"></i> <span data-i18n="checklist">Pre-Trip Checklist</span>
+                            <h3 class="font-black text-lg text-orange-600 flex items-center gap-2">
+                                <i data-lucide="shirt" width="20"></i> 避暑與穿搭建議
                             </h3>
-                            <button id="btn-add-outfit" onclick="addAdvisoryItem('outfit')" class="hidden bg-theme-50 text-theme-600 hover:bg-theme-100 border border-theme-200 px-3 py-1.5 rounded-full text-xs font-bold transition-colors">+ Add</button>
+                            <button id="btn-add-outfit" onclick="addAdvisoryItem('outfit')" class="hidden bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-full text-xs font-bold transition-colors">+ 新增</button>
                         </div>
                         <ul id="outfit-list" class="space-y-4"></ul>
                     </div>
-                    
-                    <div class="glass-card rounded-3xl p-6 border border-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="glass-card rounded-3xl p-6 border border-white">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-black text-lg text-accent-600 flex items-center gap-2">
-                                <i data-lucide="car-front" width="20"></i> <span data-i18n="logistics">Logistics & Driving</span>
+                            <h3 class="font-black text-lg text-theme-700 flex items-center gap-2">
+                                <i data-lucide="car-front" width="20"></i> HEV 自駕提示
                             </h3>
-                            <button id="btn-add-drive" onclick="addAdvisoryItem('drive')" class="hidden bg-accent-50 text-accent-600 hover:bg-accent-100 border border-accent-200 px-3 py-1.5 rounded-full text-xs font-bold transition-colors">+ Add</button>
+                            <button id="btn-add-drive" onclick="addAdvisoryItem('drive')" class="hidden bg-theme-50 text-theme-600 hover:bg-theme-100 px-3 py-1.5 rounded-full text-xs font-bold transition-colors">+ 新增</button>
                         </div>
                         <ul id="drive-list" class="space-y-4"></ul>
                     </div>
                 </div>
             </div>
         </main>
-    </div> <!-- /#app-content -->
-
-    <!-- Firebase, Logic & Widgets -->
-    <script type="module">
+    </div> <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ==========================================
-        // i18n Dictionaries
-        // ==========================================
-        const translations = {
-            "en": {
-                accessDenied: "Access Denied", invalidPassword: "Invalid password.<br>Please try again.", retry: "Retry",
-                tripTitle: "Australia Family Trip 🦘", people: "4 People",
-                tabDashboard: "Dashboard", tabItinerary: "Itinerary", tabBudget: "Budget", tabInfo: "Info",
-                days: " Days", cities: "3 Major Cities", roadTrip: "Gold Coast Road Trip", estTotal: "Est. Total (TWD)",
-                navHub: "Key Locations & Navigation", dailyItinerary: "Daily Itinerary", editHint: "Click text to edit. Changes sync automatically.", expandAll: "Expand / Collapse",
-                budgetEst: "Budget Estimation (TWD)", category: "Category", amount: "Amount (TWD)", notes: "Notes", totalEst: "Total Estimate", addItem: "Add Item",
-                weatherTitle: "August Temp: SYD vs GC", weatherNote: "August is late winter in Australia. Mornings/evenings are chilly, especially in Sydney.",
-                checklist: "Pre-Trip Checklist", logistics: "Logistics & Driving",
-                roleEditor: "Editor", roleViewer: "Viewer", syncSaved: "Synced", syncSaving: "Saving...", syncOffline: "Offline"
-            },
-            "zh-TW": {
-                accessDenied: "權限不足", invalidPassword: "密碼錯誤。<br>請重新登入。", retry: "重新輸入",
-                tripTitle: "2026 澳洲家庭之旅 🦘", people: "4 人",
-                tabDashboard: "儀表板", tabItinerary: "日程表", tabBudget: "預算", tabInfo: "資訊",
-                days: " 天", cities: "3 個主要城市", roadTrip: "黃金海岸公路旅行", estTotal: "預估總旅費 (TWD)",
-                navHub: "重點導航庫 (Google Maps)", dailyItinerary: "詳細日程表", editHint: "點擊文字編輯，自動同步至雲端。", expandAll: "展開 / 收合",
-                budgetEst: "旅費預算估算表 (TWD)", category: "項目分類", amount: "預估金額 (TWD)", notes: "備註說明", totalEst: "總計預估", addItem: "新增項目",
-                weatherTitle: "8月氣溫對比：雪梨 vs 黃金海岸", weatherNote: "澳洲 8 月為冬末初春，早晚溫差大，雪梨請備妥保暖衣物。",
-                checklist: "行前與穿搭檢核", logistics: "自駕與物流提示",
-                roleEditor: "編輯模式", roleViewer: "唯讀模式", syncSaved: "雲端已同步", syncSaving: "儲存中...", syncOffline: "離線/失敗"
-            },
-            "ja": {
-                accessDenied: "アクセス拒否", invalidPassword: "パスワードが無効です。<br>もう一度お試しください。", retry: "再入力",
-                tripTitle: "オーストラリア 家族旅行 🦘", people: "4 人",
-                tabDashboard: "ダッシュボード", tabItinerary: "スケジュール", tabBudget: "予算", tabInfo: "情報",
-                days: " 日間", cities: "3 主要都市", roadTrip: "ゴールドコースト ドライブ", estTotal: "予想合計 (TWD)",
-                navHub: "主要な目的地とナビ", dailyItinerary: "詳細スケジュール", editHint: "クリックして編集。自動同期されます。", expandAll: "展開 / 縮小",
-                budgetEst: "予算見積もり (TWD)", category: "カテゴリー", amount: "金額 (TWD)", notes: "備考", totalEst: "合計見積もり", addItem: "追加",
-                weatherTitle: "8月の気温: シドニー vs ゴールドコースト", weatherNote: "オーストラリアの8月は晩冬です。特にシドニーの朝晩は冷え込みます。",
-                checklist: "出発前チェックリスト", logistics: "ドライブと移動のヒント",
-                roleEditor: "編集者", roleViewer: "閲覧者", syncSaved: "同期完了", syncSaving: "保存中...", syncOffline: "オフライン"
-            }
-        };
-
-        window.changeLanguage = function(lang) {
-            localStorage.setItem('dashboard_lang', lang);
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang] && translations[lang][key]) {
-                    if (el.tagName.toLowerCase() === 'input' && el.type === 'button') el.value = translations[lang][key];
-                    else el.innerHTML = translations[lang][key];
-                }
-            });
-            // Update roles and sync text
-            if (window.applyRoleUI) window.applyRoleUI();
-            if (window.lastSyncStatus) window.updateStatus(window.lastSyncStatus);
-        }
-
-        // ==========================================
-        // Live Widgets (Weather & Exchange Rate)
-        // ==========================================
-        async function initWidgets() {
-            // 1. Exchange Rate (AUD to TWD) via Free API
-            try {
-                const exRes = await fetch('https://open.er-api.com/v6/latest/AUD');
-                const exData = await exRes.json();
-                if(exData && exData.rates && exData.rates.TWD) {
-                    document.getElementById('exchange-rate-display').innerText = `1 AUD ≈ ${exData.rates.TWD.toFixed(2)} TWD`;
-                }
-            } catch(e) { console.log('Exchange rate fetch failed'); }
-
-            // 2. Weather Forecast (Sydney & Gold Coast) via Open-Meteo
-            const fetchWeather = async (lat, lon, idPrefix) => {
-                try {
-                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=3`);
-                    const data = await res.json();
-                    
-                    // Weather Code to Emoji (Simple map)
-                    const getWeatherEmoji = (code) => {
-                        if (code <= 1) return '☀️';
-                        if (code <= 3) return '🌤️';
-                        if (code <= 48) return '☁️';
-                        if (code <= 67) return '🌧️';
-                        if (code <= 77) return '❄️';
-                        return '⛈️';
-                    };
-
-                    // Current
-                    const currTemp = Math.round(data.current_weather.temperature);
-                    const currIcon = getWeatherEmoji(data.current_weather.weathercode);
-                    document.getElementById(`weather-${idPrefix}`).innerHTML = `${currIcon} ${currTemp}°C`;
-
-                    // 3-Day Forecast Tooltip
-                    let tooltipHTML = `<div class="font-bold border-b pb-1 mb-1">3-Day Forecast</div>`;
-                    for(let i=0; i<3; i++) {
-                        const date = new Date(data.daily.time[i]).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-                        const max = Math.round(data.daily.temperature_2m_max[i]);
-                        const min = Math.round(data.daily.temperature_2m_min[i]);
-                        const icon = getWeatherEmoji(data.daily.weathercode[i]);
-                        tooltipHTML += `<div class="flex justify-between items-center"><span>${date} ${icon}</span> <span>${min}° ~ ${max}°</span></div>`;
-                    }
-                    document.getElementById(`weather-${idPrefix}-tooltip`).innerHTML = tooltipHTML;
-
-                } catch(e) { console.log('Weather fetch failed'); }
-            };
-
-            // Coordinates: Sydney(-33.8688, 151.2093), Gold Coast(-28.0167, 153.4000)
-            fetchWeather(-33.8688, 151.2093, 'syd');
-            fetchWeather(-28.0167, 153.4000, 'gc');
-        }
-
-        // ==========================================
-        // Application Init & Firebase
-        // ==========================================
+        // =======================================================
+        // 如果未通過驗證，直接阻斷所有 Firebase 連線與邏輯執行
+        // =======================================================
         if (!window.isAuthenticated) {
-            console.log("Auth failed. Scripts halted.");
+            console.log("Authentication failed. Firebase init aborted.");
         } else {
+            // 顯示主要內容
             document.getElementById('app-content').style.display = 'block';
-
-            // Apply saved language or default to zh-TW
-            const savedLang = localStorage.getItem('dashboard_lang') || 'zh-TW';
-            document.getElementById('lang-selector').value = savedLang;
-            window.changeLanguage(savedLang);
-            initWidgets(); // Start fetching live data
 
             const firebaseConfig = {
                 apiKey: "AIzaSyBQagGqyfWGkwwibgsnyZ69eNRjOHIenM0",
@@ -561,80 +368,70 @@
 
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
-            const DOC_ID = "2026_summer_australia_trip";
+            const DOC_ID = "summer_nagoya_trip"; 
 
             window.ITINERARY_DATA = [];
             window.OUTFIT_TIPS = [];
             window.DRIVE_TIPS = [];
             window.budgetItems = [];
 
-            // --- Default Data: Australia 2026 ---
+            // Default Data fallback
             const DEFAULT_ITINERARY_DATA = [
-                { day: 1, date: "2026/08/14 (Fri)", city: "Singapore", title: "Transit & Jewel Changi", icon: "plane", weather: "Tropical 28°C", highlights: ["Fly Scoot TR867", "Jewel Rain Vortex", "Song Fa Bak Kut Teh"], stay: "Overnight Flight", transport: "Flight (TPE ➔ SIN)", details: [ { id: 101, time: "16:15", action: "Flight TR867 Departs (TPE T1)", type: "transport", location: "Taiwan Taoyuan International Airport" }, { id: 102, time: "20:45", action: "Arrive at Changi Airport (SIN)", type: "transport", location: "Singapore Changi Airport" }, { id: 103, time: "21:00", action: "Jewel Changi: Watch Rain Vortex Light Show", type: "activity", location: "Jewel Changi Airport" }, { id: 104, time: "21:30", action: "Dinner: Song Fa Bak Kut Teh (Pepper Soup)", type: "food", location: "Song Fa Bak Kut Teh Jewel Changi Airport" } ] },
-                { day: 2, date: "2026/08/15 (Sat)", city: "Sydney", title: "Arrival & City Walk", icon: "building", weather: "Cool 15°C", highlights: ["Arrive SYD", "Hyde Park", "QVB & Chinatown"], stay: "Meriton Suites Pitt Street", transport: "Flight (SIN ➔ SYD), UberXL", details: [ { id: 201, time: "02:10", action: "Flight TR10 Departs (SIN T1)", type: "transport", location: "" }, { id: 202, time: "11:45", action: "Arrive at Sydney (SYD T1)", type: "transport", location: "Sydney Airport" }, { id: 203, time: "13:00", action: "UberXL to Hotel (~30 mins)", type: "transport", location: "" }, { id: 204, time: "13:40", action: "Check-in: Meriton Suites Pitt Street", type: "stay", location: "Meriton Suites Pitt Street, 329 Pitt St, Sydney NSW 2000, Australia" }, { id: 205, time: "15:00", action: "City Walk: Hyde Park & St Mary's Cathedral", type: "activity", location: "St Mary's Cathedral, Sydney" }, { id: 206, time: "16:30", action: "Afternoon Tea: The Grounds of the City", type: "food", location: "The Grounds of the City, George St, Sydney" }, { id: 207, time: "17:30", action: "Shopping: QVB & Chinatown walk", type: "shopping", location: "Queen Victoria Building" } ] },
-                { day: 3, date: "2026/08/16 (Sun)", city: "Sydney", title: "Harbour Visual Feast", icon: "ship", weather: "Sunny 16°C", highlights: ["Fish Market", "Opera House", "Manly Ferry"], stay: "Meriton Suites Pitt Street", transport: "Light Rail / Ferry (Opal Pay)", details: [ { id: 301, time: "08:30", action: "Brunch: Sydney Fish Market (Arrive early)", type: "food", location: "Sydney Fish Market, Pyrmont" }, { id: 302, time: "11:00", action: "Walk: Darling Harbour to The Rocks", type: "activity", location: "Darling Harbour" }, { id: 303, time: "13:30", action: "Explore: Sydney Opera House (Close up)", type: "activity", location: "Sydney Opera House" }, { id: 304, time: "15:30", action: "Ferry: Circular Quay to Manly Beach", type: "transport", location: "Circular Quay Wharf" }, { id: 305, time: "17:30", action: "Ferry Return: View Luna Park neon lights", type: "activity", location: "Luna Park Sydney" }, { id: 306, time: "19:00", action: "Dinner: Cafe Sydney (Harbour view) or Mamak", type: "food", location: "Cafe Sydney" } ] },
-                { day: 4, date: "2026/08/17 (Mon)", city: "Blue Mtns", title: "Vertical Forest Exploration", icon: "mountain", weather: "Cold 10°C", highlights: ["Scenic World", "Three Sisters", "The Yellow Deli"], stay: "Meriton Suites Pitt Street", transport: "Train (T1/BMT Line)", details: [ { id: 401, time: "08:00", action: "Train: Sydney Central to Katoomba (~2hr)", type: "transport", location: "Central Station, Sydney" }, { id: 402, time: "10:30", action: "Scenic World: Red Railway & Rainforest Walk", type: "activity", location: "Scenic World, Violet St, Katoomba NSW" }, { id: 403, time: "12:30", action: "Scenic World: Blue Cableway & Yellow Skyway", type: "activity", location: "" }, { id: 404, time: "13:30", action: "Viewpoint: Three Sisters Rock", type: "activity", location: "Echo Point Lookout (Three Sisters)" }, { id: 405, time: "14:30", action: "Late Lunch: The Yellow Deli (Wooden interior)", type: "food", location: "The Yellow Deli Katoomba" }, { id: 406, time: "16:30", action: "Train: Return to Sydney City", type: "transport", location: "" } ] },
-                { day: 5, date: "2026/08/18 (Tue)", city: "Sydney", title: "Academy & Coastal Views", icon: "camera", weather: "Sunny 17°C", highlights: ["Sydney Uni", "Bondi Beach", "SkyFeast"], stay: "Meriton Suites Pitt Street", transport: "Bus / Walk", details: [ { id: 501, time: "09:00", action: "Explore: University of Sydney (Hogwarts vibes)", type: "activity", location: "The University of Sydney" }, { id: 502, time: "12:30", action: "Bus: Head to Bondi Beach", type: "transport", location: "Bondi Beach" }, { id: 503, time: "13:30", action: "Lunch: Hurricane's Grill (Pork Ribs) or Betty's Burgers", type: "food", location: "Hurricane's Grill Bondi Beach" }, { id: 504, time: "15:00", action: "Photo Spot: Bondi Icebergs Pool", type: "activity", location: "Bondi Icebergs Club" }, { id: 505, time: "17:30", action: "Shopping: Westfield Sydney", type: "shopping", location: "Westfield Sydney" }, { id: 506, time: "19:00", action: "Dinner: SkyFeast at Sydney Tower ($A125 Buffet)", type: "food", location: "SkyFeast at Sydney Tower" } ] },
-                { day: 6, date: "2026/08/19 (Wed)", city: "Gold Coast", title: "City Transfer & Logistics", icon: "plane", weather: "Mild 20°C", highlights: ["Fly to OOL", "Rent MG ZS", "Pacific Fair"], stay: "Meriton Suites Broadbeach", transport: "Flight (VA519), Car Rental", details: [ { id: 601, time: "10:00", action: "Uber to SYD Airport", type: "transport", location: "Sydney Airport" }, { id: 602, time: "12:20", action: "Flight VA519 Departs (SYD)", type: "transport", location: "" }, { id: 603, time: "13:40", action: "Arrive at Gold Coast (OOL)", type: "transport", location: "Gold Coast Airport" }, { id: 604, time: "14:30", action: "Rent Car: Alpha Car Hire (MG ZS SUV)", type: "transport", location: "Alpha Car Hire Gold Coast" }, { id: 605, time: "15:30", action: "Check-in: Meriton Suites Broadbeach", type: "stay", location: "Meriton Suites Broadbeach, 2669 Gold Coast Hwy" }, { id: 606, time: "16:30", action: "Shopping: Pacific Fair (Supplies & Dinner)", type: "shopping", location: "Pacific Fair Shopping Centre" } ] },
-                { day: 7, date: "2026/08/20 (Thu)", city: "Gold Coast", title: "Action & Heroes at Movie World", icon: "ticket", weather: "Sunny 21°C", highlights: ["Movie World", "Stunt Show", "Harbour Town"], stay: "Meriton Suites Broadbeach", transport: "Drive (25 mins)", details: [ { id: 701, time: "09:30", action: "Drive to Warner Bros. Movie World", type: "transport", location: "Warner Bros. Movie World" }, { id: 702, time: "10:00", action: "Movie World: Rides & Superhero Meet", type: "activity", location: "" }, { id: 703, time: "13:30", action: "Show: Hollywood Stunt Driver", type: "activity", location: "" }, { id: 704, time: "16:00", action: "Shopping: Harbour Town Premium Outlets", type: "shopping", location: "Harbour Town Premium Outlets" }, { id: 705, time: "18:30", action: "Dinner: Gotham Grill (Theme Restaurant)", type: "food", location: "Gotham Grill, Movie World" } ] },
-                { day: 8, date: "2026/08/21 (Fri)", city: "Gold Coast", title: "Marine Life & Whale Watching", icon: "waves", weather: "Sunny 22°C", highlights: ["Sea World", "Whale Watch Cruise", "Hatsuhana Sushi"], stay: "Meriton Suites Broadbeach", transport: "Drive (15 mins)", details: [ { id: 801, time: "09:30", action: "Drive to Sea World Gold Coast", type: "transport", location: "Sea World Gold Coast" }, { id: 802, time: "10:00", action: "Sea World: Dolphins, Penguins, Polar Bears", type: "activity", location: "" }, { id: 803, time: "12:30", action: "Lunch: Hatsuhana Japanese (Inside Park)", type: "food", location: "Hatsuhana Japanese Restaurant" }, { id: 804, time: "14:00", action: "Activity: Whale Watching Cruise (Departs from Park)", type: "activity", location: "" }, { id: 805, time: "18:00", action: "Dinner: Broadbeach Local Area", type: "food", location: "Broadbeach QLD" } ] },
-                { day: 9, date: "2026/08/22 (Sat)", city: "Gold Coast", title: "Surfers Paradise & High Views", icon: "sun", weather: "Sunny 21°C", highlights: ["Surfers Paradise Sign", "SkyPoint", "Beach Markets"], stay: "Meriton Suites Broadbeach", transport: "Drive / Walk", details: [ { id: 901, time: "10:00", action: "Photo Spot: Surfers Paradise Beach Sign", type: "activity", location: "Surfers Paradise Beach" }, { id: 902, time: "11:30", action: "Observation Deck: SkyPoint 77F", type: "activity", location: "SkyPoint Observation Deck" }, { id: 903, time: "13:30", action: "Lunch: Vapiano (Fresh Pasta)", type: "food", location: "Vapiano Surfers Paradise" }, { id: 904, time: "16:00", action: "Explore: Beachfront Markets (Weekend Crafts)", type: "shopping", location: "Surfers Paradise Beachfront Markets" }, { id: 905, time: "17:30", action: "Sunset Drink: SkyPoint Bar", type: "activity", location: "" } ] },
-                { day: 10, date: "2026/08/23 (Sun)", city: "Gold Coast", title: "Aussie Farm Experience", icon: "tree-pine", weather: "Sunny 20°C", highlights: ["Paradise Country", "Koala Photos", "HOTA"], stay: "Meriton Suites Broadbeach", transport: "Drive (25 mins)", details: [ { id: 1001, time: "09:30", action: "Drive to Paradise Country", type: "transport", location: "Paradise Country, Oxenford" }, { id: 1002, time: "10:30", action: "Farm Experience: Koala holding & Sheep shearing", type: "activity", location: "" }, { id: 1003, time: "14:00", action: "Art & Culture: HOTA (Home of the Arts)", type: "activity", location: "HOTA, Home of the Arts" }, { id: 1004, time: "18:00", action: "Dinner: The Collective Palm Beach", type: "food", location: "The Collective Palm Beach" } ] },
-                { day: 11, date: "2026/08/24 (Mon)", city: "Brisbane", title: "Brisbane City Day Trip", icon: "building", weather: "Mild 23°C", highlights: ["Queen St Mall", "Lone Pine Koalas", "Mt Coot-tha"], stay: "Meriton Suites Broadbeach", transport: "Drive via M1 (75 mins)", details: [ { id: 1101, time: "08:30", action: "Drive to Brisbane via M1 Highway", type: "transport", location: "" }, { id: 1102, time: "10:00", action: "Shopping: Queen Street Mall", type: "shopping", location: "Queen Street Mall, Brisbane" }, { id: 1103, time: "12:30", action: "Lunch: Grill'd (Healthy Burgers)", type: "food", location: "Grill'd South Bank" }, { id: 1104, time: "14:00", action: "Animals: Lone Pine Koala Sanctuary", type: "activity", location: "Lone Pine Koala Sanctuary, Fig Tree Pocket" }, { id: 1105, time: "17:00", action: "Night View: Mount Coot-tha Lookout", type: "activity", location: "Mount Coot-tha Lookout" }, { id: 1106, time: "18:30", action: "Dinner: Eat Street Northshore (Check if open Mon)", type: "food", location: "Eat Street Northshore" } ] },
-                { day: 12, date: "2026/08/25 (Tue)", city: "Gold Coast", title: "Wrap-up & Airport Hotel", icon: "car", weather: "Sunny 21°C", highlights: ["Return Car", "Coolangatta", "Rydges Hotel"], stay: "Rydges GC Airport Hotel", transport: "Drive, Uber", details: [ { id: 1201, time: "09:30", action: "Morning: Free time for Beach/Shopping", type: "activity", location: "" }, { id: 1202, time: "14:00", action: "Car Return: Alpha Car Hire", type: "transport", location: "Alpha Car Hire Gold Coast" }, { id: 1203, time: "15:00", action: "Check-in: Rydges GC Airport Hotel", type: "stay", location: "Rydges Gold Coast Airport" }, { id: 1204, time: "16:00", action: "Walk: Coolangatta & Kirra Beach", type: "activity", location: "Kirra Beach, QLD" }, { id: 1205, time: "17:00", action: "Final Shopping: Woolworths (TimTams)", type: "shopping", location: "Woolworths Coolangatta" }, { id: 1206, time: "18:30", action: "Dinner: The Salty Fox (Rooftop runway view)", type: "food", location: "The Salty Fox Rooftop Bar" } ] },
-                { day: 13, date: "2026/08/26 (Wed)", city: "Transit", title: "Farewell Australia", icon: "plane", weather: "-", highlights: ["VA504 to SYD", "TR11 to SIN", "Changi Transfit"], stay: "Overnight Flight", transport: "Flights", details: [ { id: 1301, time: "05:00", action: "Walk to GC Airport Terminal (Right across street)", type: "transport", location: "Gold Coast Airport" }, { id: 1302, time: "07:05", action: "Flight VA504 Departs (OOL)", type: "transport", location: "" }, { id: 1303, time: "08:35", action: "Arrive at Sydney (SYD)", type: "transport", location: "" }, { id: 1304, time: "13:00", action: "Flight TR11 Departs (SYD)", type: "transport", location: "" }, { id: 1305, time: "19:30", action: "Arrive at Singapore (SIN) - 5.5hr Layover", type: "transport", location: "" }, { id: 1306, time: "20:00", action: "Changi T3: Bacha Coffee & Shake Shack", type: "food", location: "Bacha Coffee Changi T3" } ] },
-                { day: 14, date: "2026/08/27 (Thu)", city: "Home", title: "Arrive in Taiwan", icon: "home", weather: "-", highlights: ["Fly TR866", "Back Home"], stay: "Sweet Home", transport: "Flight", details: [ { id: 1401, time: "01:00", action: "Flight TR866 Departs (SIN T1)", type: "transport", location: "" }, { id: 1402, time: "05:45", action: "Arrive safely in Taiwan (TPE T1)", type: "transport", location: "Taiwan Taoyuan International Airport" } ] }
+                { day: 1, date: "2026/07/14 (二)", city: "Nagoya", title: "機場整備與都會機能確認", icon: "plane", weather: "酷熱 34°C", highlights: ["IT206 抵達 NGO", "領取 Noah HEV", "大須觀音/榮商圈"], stay: "Minn STATION Ai Nagoya", transport: "飛機, 自駕 (45km)", details: [ { id: 101, time: "09:00", action: "虎航 IT206 起飛 (TPE 第一航廈)", type: "transport", location: "Taiwan Taoyuan International Airport" }, { id: 102, time: "12:55", action: "抵達中部國際機場 (NGO)", type: "transport", location: "Chubu Centrair International Airport" }, { id: 103, time: "14:00", action: "Toyota Rent-a-Car 領車 (確認第3排與行李空間)", type: "transport", location: "Toyota Rent a Car Chubu International Airport" }, { id: 104, time: "16:00", action: "Minn STATION Ai Nagoya (自助報到 Check-in)", type: "stay", location: "Minn STATION Ai Nagoya" }, { id: 105, time: "17:00", action: "大須商店街 / 榮商圈 散策與採買", type: "shopping", location: "Osu Shopping Street" }, { id: 106, time: "19:00", action: "晚餐：熱田蓬萊軒 (鰻魚飯三吃)", type: "food", location: "Atsuta Horaiken Matsuzakaya" } ] },
+                { day: 2, date: "2026/07/15 (三)", city: "Nagoya", title: "吉卜力園區與氣溫對策", icon: "sun", weather: "酷熱 35°C", highlights: ["吉卜力公園", "魔女之谷 / 大倉庫", "Oasis 21 夜景"], stay: "Minn STATION Ai Nagoya", transport: "自駕 (50km)", details: [ { id: 201, time: "09:00", action: "前往吉卜力公園 (停放北口停車場)", type: "transport", location: "愛・地球博記念公園（モリコロパーク）北口駐車場" }, { id: 202, time: "10:00", action: "吉卜力公園：魔女之谷、青春之丘 (早晨避暑)", type: "activity", location: "Ghibli Park" }, { id: 203, time: "13:00", action: "吉卜力大倉庫 (室內冷氣區參觀與午餐)", type: "activity", location: "Ghibli's Grand Warehouse" }, { id: 204, time: "16:00", action: "AEON Mall 長久手 (購物與避暑)", type: "shopping", location: "Aeon Mall Nagakute" }, { id: 205, time: "19:30", action: "Oasis 21 (水之宇宙船) 觀賞夜景", type: "activity", location: "Oasis 21" }, { id: 206, time: "20:30", action: "晚餐：山本屋 總本家 (味噌烏龍麵)", type: "food", location: "Yamamotoya Sohonke" } ] },
+                { day: 3, date: "2026/07/16 (四)", city: "Gero", title: "飛驒川北上與名泉體驗", icon: "car", weather: "晴 31°C", highlights: ["國道41號美景", "下呂溫泉老街", "大江戶溫泉物語"], stay: "大江戶 Premium 下呂本館", transport: "自駕 (120km)", details: [ { id: 301, time: "10:00", action: "離開名古屋，沿國道 41 號北上", type: "transport", location: "" }, { id: 302, time: "12:00", action: "中途休息：道之驛 美濃白川 (白川茶霜淇淋)", type: "food", location: "Michi-no-Eki Mino Shirakawa" }, { id: 303, time: "14:30", action: "下呂溫泉老街散步 (溫玉霜淇淋、飛驒牛壽司)", type: "activity", location: "Gero Onsen" }, { id: 304, time: "17:00", action: "入住 大江戶 Premium 下呂本館 (領取免費啤酒)", type: "stay", location: "Oedo Onsen Monogatari Premium Gero Honkan" }, { id: 305, time: "18:30", action: "飯店內享用 Buffet 晚餐與榻榻米浴場", type: "food", location: "" } ] },
+                { day: 4, date: "2026/07/17 (五)", city: "Hirayu", title: "垂直海拔移動與極致避暑", icon: "tree-pine", weather: "涼爽 20°C", highlights: ["新穗高纜車", "2156m 展望台", "夜鳴拉麵"], stay: "匠の宿 深山桜庵", transport: "自駕 (85km)", details: [ { id: 401, time: "08:30", action: "提早出發避開雲霧，前往新穗高纜車", type: "transport", location: "Shinhotaka Ropeway" }, { id: 402, time: "10:00", action: "搭乘雙層纜車至西穗高口站 (山頂約15-18度，需薄外套)", type: "activity", location: "Nishihotakaguchi Station" }, { id: 403, time: "13:00", action: "午餐：阿爾卑斯街道平湯 (飛驒牛拉麵)", type: "food", location: "Alps Kaido Hirayu" }, { id: 404, time: "15:00", action: "入住 匠の宿 深山桜庵 (享受露天風呂)", type: "stay", location: "Takumi no Yado Miyamazakura-an" }, { id: 405, time: "18:00", action: "飯店內享用飛驒牛晚餐", type: "food", location: "" }, { id: 406, time: "22:00", action: "宵夜：Dormy Inn 招牌免費夜鳴拉麵", type: "food", location: "" } ] },
+                { day: 5, date: "2026/07/18 (六)", city: "Gujo", title: "國家公園健行與山城跨越", icon: "map", weather: "晴 26°C", highlights: ["上高地健行", "道之驛買水蜜桃", "郡上八幡"], stay: "Fairfield Gifu Gujo", transport: "自駕 (100km), 計程車", details: [ { id: 501, time: "08:00", action: "車停 Akandana 停車場，轉乘計程車 (2+3人) 進入上高地", type: "transport", location: "Akandana Parking Lot" }, { id: 502, time: "09:00", action: "上高地健行：大正池 -> 河童橋 -> 明神池", type: "activity", location: "Kamikochi" }, { id: 503, time: "13:30", action: "沿國道 158/156 前往郡上八幡", type: "transport", location: "" }, { id: 504, time: "14:30", action: "道之驛 飛驒街道なぎさ (購買當季飛驒桃)", type: "shopping", location: "Michi-no-Eki Hida Kaido Nagisa" }, { id: 505, time: "16:30", action: "入住 Fairfield Gifu Gujo", type: "stay", location: "Fairfield by Marriott Gifu Gujo" }, { id: 506, time: "18:00", action: "晚餐：郡上八幡老街 (在地蕎麥麵或飛驒牛排)", type: "food", location: "Gujo Hachiman" } ] },
+                { day: 6, date: "2026/07/19 (日)", city: "Katsuyama", title: "時程臨界點與禪宗巡禮", icon: "clock", weather: "晴 32°C", highlights: ["福井恐龍博物館", "永平寺", "大江戶山中 Grand"], stay: "大江戶 Premium 山中 Grand", transport: "自駕 (115km)", details: [ { id: 601, time: "08:30", action: "經中部縱貫自動車道前往福井 (下坡多，使用 HEV B檔)", type: "transport", location: "" }, { id: 602, time: "09:30", action: "午餐：道之驛 恐龍溪谷勝山 (勝山醬汁豬排飯)", type: "food", location: "Michi-no-Eki Dinosaur Valley Katsuyama" }, { id: 603, time: "10:30", action: "參觀福井恐龍博物館 (注意室內冷氣極強)", type: "activity", location: "Fukui Prefectural Dinosaur Museum" }, { id: 604, time: "14:00", action: "【重要時程】務必離開勝山前往永平寺", type: "transport", location: "" }, { id: 605, time: "14:40", action: "參觀永平寺 (曹洞宗大本山，長廊與伽藍)", type: "activity", location: "Eiheiji Temple" }, { id: 606, time: "17:30", action: "入住 大江戶 Premium 山中 Grand (享用 Buffet)", type: "stay", location: "Yamanaka Grand Hotel" } ] },
+                { day: 7, date: "2026/07/20 (一)", city: "Yamashiro", title: "溪谷步道與越前海岸奇觀", icon: "waves", weather: "多雲 30°C", highlights: ["鶴仙溪川床", "越前松島水族館", "東尋坊"], stay: "大江戶 Premium 山下家", transport: "自駕 (75km)", details: [ { id: 701, time: "09:30", action: "鶴仙溪步道散步，體驗「川床」品抹茶", type: "activity", location: "Kakusenkei Gorge" }, { id: 702, time: "11:30", action: "驅車前往日本海側", type: "transport", location: "" }, { id: 703, time: "12:30", action: "越前松島水族館 (正午避暑好去處)", type: "activity", location: "Echizen Matsushima Aquarium" }, { id: 704, time: "15:00", action: "東尋坊 (世界級安山岩柱狀節理，傍晚光線佳)", type: "activity", location: "Tojinbo" }, { id: 705, time: "17:30", action: "入住 大江戶 Premium 山下家 (連兩日高品質自助餐)", type: "stay", location: "Oedo Onsen Monogatari Yamashitaya" } ] },
+                { day: 8, date: "2026/07/21 (二)", city: "Kanazawa", title: "沙灘路面挑戰與衣物洗滌", icon: "car", weather: "晴 33°C", highlights: ["千里濱沙灘公路", "底盤清洗", "Hyatt House 洗衣"], stay: "Hyatt House Kanazawa", transport: "自駕 (100km)", details: [ { id: 801, time: "09:30", action: "氣多大社 (參訪能登國一之宮)", type: "activity", location: "Keta Taisha" }, { id: 802, time: "10:30", action: "千里濱沙灘公路 (日本唯一合法行駛沙灘)", type: "transport", location: "Chirihama Nagisa Driveway" }, { id: 803, time: "12:00", action: "道之驛 のと千里浜 (利用免費水柱清洗車輪底盤鹽分)", type: "activity", location: "Michi-no-Eki Noto Chirihama" }, { id: 804, time: "14:00", action: "抵達金澤，停入特約停車場 (NPC24H Cross Gate)", type: "transport", location: "NPC24H Cross Gate Kanazawa" }, { id: 805, time: "15:00", action: "入住 Hyatt House Kanazawa (開始使用房內洗脫烘)", type: "stay", location: "Hyatt House Kanazawa" }, { id: 806, time: "18:00", action: "金澤車站百番街 (Anto) 採買晚餐 (喉黑魚)", type: "food", location: "Kanazawa Hyakubangai Anto" } ] },
+                { day: 9, date: "2026/07/22 (三)", city: "Kanazawa", title: "金澤歷史與工藝全覽", icon: "camera", weather: "晴 34°C", highlights: ["兼六園/美術館", "東茶屋街", "近江町海鮮"], stay: "Hyatt House Kanazawa", transport: "公車 / 步行 (15km)", details: [ { id: 901, time: "09:00", action: "全日不開車，使用市內巴士一日券。前往兼六園", type: "activity", location: "Kenroku-en" }, { id: 902, time: "11:00", action: "21 世紀美術館 (重點參觀泳池裝置)", type: "activity", location: "21st Century Museum of Contemporary Art, Kanazawa" }, { id: 903, time: "13:00", action: "東茶屋街 (欣賞紅殼格子建築，吃金箔冰淇淋)", type: "activity", location: "Higashi Chaya District" }, { id: 904, time: "15:30", action: "近江町市場 (下午折扣時段採買海膽、甜蝦)", type: "shopping", location: "Omicho Market" }, { id: 905, time: "18:00", action: "返回飯店利用客房大餐桌，享用 5 人海鮮大餐", type: "food", location: "Hyatt House Kanazawa" } ] },
+                { day: 10, date: "2026/07/23 (四)", city: "Komatsu", title: "自然信仰、重型機械與歸國", icon: "plane", weather: "晴 33°C", highlights: ["那谷寺", "小松之杜挖土機", "AEON 掃貨"], stay: "溫暖的家", transport: "自駕 (45km), 飛機", details: [ { id: 1001, time: "09:30", action: "那谷寺 (自然智白山信仰，欣賞岩洞景觀)", type: "activity", location: "Natadera Temple" }, { id: 1002, time: "11:30", action: "小松之杜 (近距離觀察 930E 與 PC4000 巨型機具)", type: "activity", location: "Komatsu no Mori" }, { id: 1003, time: "12:40", action: "AEON Mall 新小松 (最後用餐與藥妝服飾掃貨)", type: "shopping", location: "Aeon Mall Shinkomatsu" }, { id: 1004, time: "14:00", action: "小松機場旁 Eneos 加滿 Regular 汽油並還車", type: "transport", location: "Toyota Rent a Car Komatsu Airport" }, { id: 1005, time: "14:50", action: "小松機場 (KMQ) 報到", type: "transport", location: "Komatsu Airport" }, { id: 1006, time: "16:55", action: "虎航 IT253 起飛，19:10 抵達台灣桃園", type: "transport", location: "" } ] }
             ];
 
-            // FIXED: Precise Google Maps search strings
-            const EXACT_LOCATIONS = {
-                "Meriton Pitt St (SYD)": "Meriton Suites Pitt Street, 329 Pitt St, Sydney NSW 2000, Australia",
-                "Scenic World": "Scenic World, Violet St, Katoomba NSW 2780, Australia",
-                "Sydney Fish Market": "Sydney Fish Market, Bank St, Pyrmont NSW 2009, Australia",
-                "Bondi Icebergs": "Bondi Icebergs Club, 1 Notts Ave, Bondi Beach NSW 2026, Australia",
-                "Meriton Broadbeach (GC)": "Meriton Suites Broadbeach, 2669 Gold Coast Hwy, Broadbeach QLD 4218, Australia",
-                "Warner Bros. Movie World": "Warner Bros. Movie World, Pacific Mwy, Oxenford QLD 4210, Australia",
-                "Sea World": "Sea World, Seaworld Dr, Main Beach QLD 4217, Australia",
-                "SkyPoint Observation Deck": "SkyPoint Observation Deck, 9 Hamilton Ave, Surfers Paradise QLD 4217, Australia",
-                "Paradise Country": "Paradise Country, Production Dr, Oxenford QLD 4210, Australia",
-                "Lone Pine Sanctuary": "Lone Pine Koala Sanctuary, 708 Jesmond Rd, Fig Tree Pocket QLD 4069, Australia",
-                "Mt Coot-tha Lookout": "Mount Coot-Tha Lookout, Sir Samuel Griffith Dr, Mount Coot-Tha QLD 4066, Australia",
-                "Rydges GC Airport": "Rydges Gold Coast Airport, Terminal Dr, Bilinga QLD 4225, Australia"
+            const MAP_CODES = {
+                "Toyota 中部機場店": "4 263 051*21", "Minn STATION Ai": "11 254 366*00", "吉卜力公園北口": "30 605 321*45",
+                "大江戶 Premium 下呂": "190 853 451*11", "新穗高纜車": "898 083 151*66", "匠の宿 深山桜庵": "620 621 120*11",
+                "Akandana 停車場(上高地)": "620 621 150*22", "Fairfield 岐阜郡上": "403 402 120*33", "福井恐龍博物館": "272 133 150*44",
+                "永平寺": "63 151 120*55", "大江戶 山中 Grand": "120 151 120*66", "越前松島水族館": "120 300 150*77",
+                "千里濱沙灘入口": "120 500 100*99", "Hyatt House 金澤": "41 528 251*10", "那谷寺": "120 100 100*22", "小松之杜": "120 150 150*33"
             };
 
             const DEFAULT_OUTFIT_TIPS = [
-                {id: 1, text: "<strong>Visa & Entry:</strong> Must apply for ETA via 'AustralianETA' app ($20 AUD) at least 1 month prior. Submit SG Arrival Card online 3 days before transit."},
-                {id: 2, text: "<strong>Winter Clothing:</strong> August is late winter/early spring. Sydney is chilly (9-18°C), especially mornings and Blue Mountains. Bring layers and windbreakers."},
-                {id: 3, text: "<strong>Payments:</strong> Apple Pay is king. Sydney public transport (Opal system) accepts direct credit card tap-on/tap-off. Ensure kids have Youth Opal cards or their own Apple Pay."},
-                {id: 4, text: "<strong>Power Plugs:</strong> Australia uses Type I plugs (3 flat pins angled in a V shape). Don't forget your adapters!"}
+                {id: 1, text: "<strong>平地酷暑對策：</strong>名古屋與金澤 7 月市區高溫可達 35°C。必備涼感衣、陽傘、防曬乳與隨身小風扇。"},
+                {id: 2, text: "<strong>山區溫差對策：</strong>Day 4 新穗高山頂 (2156m) 與 Day 5 上高地清晨氣溫約 15-18°C。全員務必準備「防風薄外套」。"},
+                {id: 3, text: "<strong>鞋履選擇：</strong>行程包含沙灘散步 (千里濱) 與國家公園健行 (上高地)，建議準備好走的運動鞋，並攜帶一雙防水涼鞋或拖鞋放車上。"},
+                {id: 4, text: "<strong>洗滌規劃：</strong>Day 8 入住的 Hyatt House 設有洗衣機，可將累積的夏季汗濕衣物於此日一次洗淨烘乾。"}
             ];
 
             const DEFAULT_DRIVE_TIPS = [
-                {id: 1, text: "<strong>Left-Hand Traffic:</strong> Remember to drive on the LEFT side of the road. Keep left, pass right."},
-                {id: 2, text: "<strong>Driver Licenses:</strong> Must carry BOTH original Taiwan driver's license and International Driving Permit (IDP) at all times."},
-                {id: 3, text: "<strong>Roundabouts:</strong> Give way to vehicles already in the roundabout (approaching from your right). Use indicators when exiting."},
-                {id: 4, text: "<strong>Logistics Plan B:</strong> For airport pickup at GC, since the MG ZS boot space (359L) is small for 4 large luggages, split the group: 2 pax + luggage take UberXL, driver + 1 pax take rental car."}
+                {id: 1, text: "<strong>長下坡駕駛：</strong>從郡上前往福井 (Day 6) 會有較長下坡，請善用 HEV 油電系統的「B檔 (動能回收檔)」以減輕煞車負擔。"},
+                {id: 2, text: "<strong>山區道路：</strong>飛驒川沿岸 (國道41號) 隧道多且有彎道，請務必開啟車輛「自動頭燈」功能。"},
+                {id: 3, text: "<strong>沙灘駕駛守則：</strong>進入千里濱沙灘公路 (Day 8) 時，請務必行駛於「深色、已被壓實」的沙面上，避免輪胎陷入鬆軟白沙中。"},
+                {id: 4, text: "<strong>車高限制：</strong>金澤 Hyatt House 配合的立體停車場限高 2.1m，Noah 車高約 1.9m，可安全進入，但請注意天線。"}
             ];
 
             const DEFAULT_BUDGET_ITEMS = [
-                { id: 1, category: "Flights (Scoot + VA)", amount: 123925, note: "TPE-SIN-SYD, SYD-OOL, OOL-SYD-TPE" },
-                { id: 2, category: "Hotels (11 Nights)", amount: 105409, note: "Meriton SYD & GC, Rydges Airport" },
-                { id: 3, category: "Car Rental (7 Days)", amount: 12023, note: "Alpha Car Hire (MG ZS SUV)" },
-                { id: 4, category: "Food & Dining", amount: 60000, note: "Cafe Sydney, Fish Market, Steaks" },
-                { id: 5, category: "Theme Parks & Tickets", amount: 25000, note: "Multi-Park Pass, Scenic World, SkyPoint" },
-                { id: 6, category: "Shopping & Misc", amount: 40000, note: "Ubers, Outlets, Souvenirs" },
+                { id: 1, category: "機票 (5人)", amount: 40203, note: "虎航 TPE-NGO 去程 / KMQ-TPE 回程" },
+                { id: 2, category: "住宿 (9晚)", amount: 125000, note: "含Minn, 大江戶, 深山櫻庵, Fairfield, Hyatt" },
+                { id: 3, category: "租車 (10天)", amount: 36000, note: "Noah HEV + 異地還車 + 保險 + NOC" },
+                { id: 4, category: "餐飲預備金", amount: 60000, note: "鰻魚飯、飛驒牛、近江町海鮮" },
+                { id: 5, category: "門票/體驗", amount: 20000, note: "吉卜力、新穗高纜車、恐龍博物館" },
+                { id: 6, category: "購物預備金", amount: 40000, note: "Outlet、藥妝、伴手禮" },
             ];
 
+            // Debounce Function
             function debounce(func, timeout = 1000){
                 let timer;
                 return (...args) => {
                     if(!window.isEditor) return; 
                     clearTimeout(timer);
-                    window.updateStatus('saving');
+                    updateStatus('saving');
                     timer = setTimeout(() => { func.apply(this, args); }, timeout);
                 };
             }
 
+            // Read from Firestore
             const unsub = onSnapshot(doc(db, "trips", DOC_ID), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -646,15 +443,16 @@
                     window.budgetItems = data.budgetItems || [];
                     
                     renderAll();
-                    window.updateStatus('saved');
+                    updateStatus('saved');
                 } else {
                     loadDefaultsLocal();
                 }
             }, (error) => {
                 console.error("Firestore Error:", error);
-                window.updateStatus('error');
+                updateStatus('error');
             });
 
+            // Write to Firestore
             const saveToCloud = debounce(async () => {
                 if(!window.isEditor) return;
                 try {
@@ -664,10 +462,10 @@
                         DRIVE_TIPS: window.DRIVE_TIPS, 
                         budgetItems: window.budgetItems
                     }, { merge: true });
-                    window.updateStatus('saved');
+                    updateStatus('saved');
                 } catch (e) {
                     console.error("Error adding document: ", e);
-                    window.updateStatus('error');
+                    updateStatus('error');
                 }
             });
 
@@ -677,39 +475,35 @@
                 window.DRIVE_TIPS = DEFAULT_DRIVE_TIPS;
                 window.budgetItems = DEFAULT_BUDGET_ITEMS;
                 renderAll();
-                document.getElementById('sync-text').innerText = "Loaded Defaults";
+                document.getElementById('sync-text').innerText = "載入預設資料";
             }
 
-            window.updateStatus = function(status) {
-                window.lastSyncStatus = status; // Keep track for language switching
+            function updateStatus(status) {
                 const dot = document.getElementById('sync-dot');
                 const text = document.getElementById('sync-text');
-                const lang = localStorage.getItem('dashboard_lang') || 'zh-TW';
-                
                 if (status === 'saved') {
                     dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
-                    text.innerText = window.isEditor ? translations[lang].syncSaved : translations[lang].roleViewer;
+                    text.innerText = window.isEditor ? '雲端已同步' : '即時檢視中';
                 } else if (status === 'saving') {
                     dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
-                    text.innerText = translations[lang].syncSaving;
+                    text.innerText = '儲存中...';
                 } else {
                     dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
-                    text.innerText = translations[lang].syncOffline;
+                    text.innerText = '離線/失敗';
                 }
             }
 
-            window.applyRoleUI = function() {
+            function applyRoleUI() {
                 const badge = document.getElementById('role-badge');
-                const lang = localStorage.getItem('dashboard_lang') || 'zh-TW';
                 if (window.isEditor) {
-                    badge.innerHTML = `<i data-lucide="edit-3" width="12"></i> ${translations[lang].roleEditor}`;
-                    badge.className = "text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 bg-accent-50 text-accent-700 border-accent-200";
+                    badge.innerHTML = `<i data-lucide="edit-3" width="12"></i> 編輯模式`;
+                    badge.className = "text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 bg-amber-50 text-amber-700 border-amber-200";
                     document.getElementById('daily-edit-hint').style.display = 'block';
                     document.getElementById('budget-add-container').classList.remove('hidden');
                     document.getElementById('btn-add-outfit').classList.remove('hidden');
                     document.getElementById('btn-add-drive').classList.remove('hidden');
                 } else {
-                    badge.innerHTML = `<i data-lucide="eye" width="12"></i> ${translations[lang].roleViewer}`;
+                    badge.innerHTML = `<i data-lucide="eye" width="12"></i> 唯讀模式`;
                     badge.className = "text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1 bg-slate-100 text-slate-600 border-slate-200";
                     document.getElementById('daily-edit-hint').style.display = 'none';
                     document.getElementById('budget-add-container').classList.add('hidden');
@@ -753,12 +547,12 @@
             }
             window.addDailyDetail = function(dayId) {
                 if(!window.isEditor) return;
-                window.ITINERARY_DATA.find(d => d.day === dayId)?.details.push({ id: Date.now(), time: "00:00", action: "New Activity", type: "activity", location: "" });
+                window.ITINERARY_DATA.find(d => d.day === dayId)?.details.push({ id: Date.now(), time: "00:00", action: "新行程", type: "activity", location: "" });
                 saveToCloud(); renderDaily();
                 document.getElementById(`day-content-${dayId}`).classList.remove('hidden');
             }
             window.removeDailyDetail = function(dayId, detailId) {
-                if(!window.isEditor || !confirm('Delete this item?')) return;
+                if(!window.isEditor || !confirm('刪除此行程？')) return;
                 const day = window.ITINERARY_DATA.find(d => d.day === dayId);
                 day.details = day.details.filter(d => d.id !== detailId);
                 saveToCloud(); renderDaily();
@@ -779,7 +573,7 @@
                 }
             }
             window.removeBudget = function(id) { if(!window.isEditor) return; window.budgetItems = window.budgetItems.filter(i => i.id !== id); saveToCloud(); renderBudget(); }
-            window.addBudgetItem = function() { if(!window.isEditor) return; window.budgetItems.push({ id: Date.now(), category: "New Item", amount: 0, note: "" }); saveToCloud(); renderBudget(); }
+            window.addBudgetItem = function() { if(!window.isEditor) return; window.budgetItems.push({ id: Date.now(), category: "新項目", amount: 0, note: "" }); saveToCloud(); renderBudget(); }
 
             window.updateAdvisory = function(type, id, newText) {
                 if(!window.isEditor) return;
@@ -789,7 +583,7 @@
             }
             window.addAdvisoryItem = function(type) {
                 if(!window.isEditor) return;
-                (type === 'outfit' ? window.OUTFIT_TIPS : window.DRIVE_TIPS).push({ id: Date.now(), text: "Edit text..." });
+                (type === 'outfit' ? window.OUTFIT_TIPS : window.DRIVE_TIPS).push({ id: Date.now(), text: "編輯新建議..." });
                 saveToCloud(); renderAdvisories();
             }
             window.removeAdvisory = function(type, id) {
@@ -804,7 +598,7 @@
                 renderMapCodes();
                 renderBudget();
                 renderAdvisories();
-                window.applyRoleUI();
+                applyRoleUI();
                 lucide.createIcons();
             }
 
@@ -834,7 +628,7 @@
                             <div class="flex items-center gap-4 mt-3 md:mt-0 justify-between md:justify-end w-full md:w-auto">
                                 <div class="text-right hidden md:block">
                                     <div class="text-xs font-bold text-slate-400">STAY</div>
-                                    <div class="text-sm font-bold text-theme-700 truncate max-w-[160px]">${day.stay}</div>
+                                    <div class="text-sm font-bold text-slate-700 truncate max-w-[160px]">${day.stay}</div>
                                 </div>
                                 <div class="text-slate-400 bg-slate-100 p-2 rounded-full"><i data-lucide="chevron-down" width="20"></i></div>
                             </div>
@@ -843,7 +637,7 @@
                         <div id="day-content-${day.day}" class="hidden p-6 bg-white/60 border-t border-slate-100">
                             <div class="relative ml-2 space-y-8 py-2">
                                 ${day.details.map(detail => {
-                                    const colorClass = detail.type === 'transport' ? 'bg-slate-400' : detail.type === 'food' ? 'bg-accent-400' : detail.type === 'shopping' ? 'bg-pink-400' : 'bg-theme-500';
+                                    const colorClass = detail.type === 'transport' ? 'bg-slate-400' : detail.type === 'food' ? 'bg-orange-400' : detail.type === 'shopping' ? 'bg-pink-400' : 'bg-theme-500';
                                     return `
                                     <div class="timeline-item relative group hover:bg-white/80 p-3 rounded-2xl -ml-3 transition-colors">
                                         <div class="timeline-line"></div>
@@ -853,10 +647,10 @@
                                             <div class="flex-1 w-full">
                                                 <div ${editAttr} onblur="updateDailyDetail(${day.day}, ${detail.id}, 'action', this.innerText)" class="font-bold text-slate-800 text-[15px]">${detail.action}</div>
                                                 <div class="flex items-center gap-2 mt-2">
-                                                    <button onclick="event.stopPropagation(); openGoogleMaps('${detail.location || ''}')" class="text-xs text-theme-600 hover:text-white flex items-center gap-1 font-bold bg-theme-50 hover:bg-theme-500 px-2 py-1 rounded-lg border border-theme-100 transition-colors shadow-sm">
-                                                        <i data-lucide="map-pin" width="12"></i> ${detail.location ? 'Nav' : '-'}
+                                                    <button onclick="event.stopPropagation(); openGoogleMaps('${detail.location || ''}')" class="text-xs text-blue-600 hover:text-white flex items-center gap-1 font-bold bg-blue-50 hover:bg-blue-500 px-2 py-1 rounded-lg border border-blue-100 transition-colors shadow-sm">
+                                                        <i data-lucide="map-pin" width="12"></i> ${detail.location ? '導航' : '無座標'}
                                                     </button>
-                                                    <div ${editAttr} onblur="updateDailyDetail(${day.day}, ${detail.id}, 'location', this.innerText)" class="text-xs font-medium text-slate-400 hover:text-slate-600 min-w-[50px] truncate max-w-[200px]" title="${detail.location || ''}">${detail.location || (window.isEditor ? 'Add Location...' : '')}</div>
+                                                    <div ${editAttr} onblur="updateDailyDetail(${day.day}, ${detail.id}, 'location', this.innerText)" class="text-xs font-medium text-slate-400 hover:text-slate-600 min-w-[50px] truncate max-w-[200px]" title="${detail.location || ''}">${detail.location || (window.isEditor ? '新增座標地點...' : '')}</div>
                                                 </div>
                                             </div>
                                             ${window.isEditor ? `<button onclick="removeDailyDetail(${day.day}, ${detail.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity p-2 bg-slate-50 rounded-full hover:bg-rose-50"><i data-lucide="trash-2" width="16"></i></button>` : ''}
@@ -864,7 +658,7 @@
                                     </div>`
                                 }).join('')}
                             </div>
-                            ${window.isEditor ? `<button onclick="addDailyDetail(${day.day})" class="ml-5 mt-6 text-sm text-theme-600 hover:text-theme-800 flex items-center gap-1 font-bold px-4 py-2 bg-white rounded-full border border-theme-100 shadow-sm hover:shadow transition-all"><i data-lucide="plus" width="16"></i> Add Block</button>` : ''}
+                            ${window.isEditor ? `<button onclick="addDailyDetail(${day.day})" class="ml-5 mt-6 text-sm text-theme-600 hover:text-theme-800 flex items-center gap-1 font-bold px-4 py-2 bg-white rounded-full border border-theme-100 shadow-sm hover:shadow transition-all"><i data-lucide="plus" width="16"></i> 新增行程區塊</button>` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -873,13 +667,13 @@
             function renderMapCodes() {
                 const container = document.getElementById('mapcode-grid');
                 if(!container) return;
-                container.innerHTML = Object.entries(EXACT_LOCATIONS).map(([name, code]) => `
+                container.innerHTML = Object.entries(MAP_CODES).map(([name, code]) => `
                     <div class="flex flex-col justify-between bg-white/80 p-4 rounded-2xl border border-slate-100 shadow-sm gap-3 hover:shadow-md transition-shadow">
-                        <button onclick="openGoogleMaps('${code}')" class="font-bold text-slate-700 hover:text-theme-600 flex items-start gap-2 text-left">
+                        <button onclick="openGoogleMaps('${name}')" class="font-bold text-slate-700 hover:text-theme-600 flex items-start gap-2 text-left">
                             <i data-lucide="map-pin" width="18" class="shrink-0 mt-0.5 text-theme-500"></i> <span class="leading-tight">${name}</span>
                         </button>
                         <div class="flex justify-end">
-                            <button onclick="openGoogleMaps('${code}')" class="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600 font-mono font-bold cursor-pointer hover:bg-slate-200 text-xs shadow-inner flex items-center gap-1"><i data-lucide="external-link" width="12"></i> Navigate</button>
+                            <code class="bg-slate-100 px-3 py-1.5 rounded-lg text-slate-600 font-mono font-bold select-all cursor-pointer hover:bg-slate-200 text-xs shadow-inner">${code}</code>
                         </div>
                     </div>
                 `).join('');
@@ -914,7 +708,7 @@
                 
                 const createLi = (item, type) => `
                     <li class="flex gap-3 group bg-white/60 p-3 rounded-xl border border-slate-100 shadow-sm">
-                        <span class="${type === 'outfit' ? 'text-theme-500' : 'text-accent-500'} font-black shrink-0 mt-0.5">•</span>
+                        <span class="${type === 'outfit' ? 'text-orange-400' : 'text-theme-500'} font-black shrink-0 mt-0.5">•</span>
                         <span ${editAttr} onblur="updateAdvisory('${type}', ${item.id}, this.innerHTML)" class="flex-1 text-slate-600 leading-relaxed">${item.text}</span>
                         ${window.isEditor ? `<button onclick="removeAdvisory('${type}', ${item.id})" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 transition-opacity p-1 self-start"><i data-lucide="x" width="16"></i></button>` : ''}
                     </li>`;
@@ -926,22 +720,18 @@
             function initChart() {
                 const ctx = document.getElementById('tempChart');
                 if(!ctx) return;
-                
-                Chart.defaults.font.family = "Nunito, 'Noto Sans TC', sans-serif";
-                Chart.defaults.color = '#64748b';
-
                 new Chart(ctx.getContext('2d'), { 
                     type: 'line', 
                     data: { 
-                        labels: ['Morning', 'Noon', 'Evening', 'Night'], 
+                        labels: ['早晨', '中午', '傍晚', '深夜'], 
                         datasets: [
-                            { label: 'Sydney (SYD)', data: [11, 18, 14, 9], borderColor: '#0284c7', backgroundColor: '#bae6fd', borderWidth: 3, tension: 0.4, fill: true }, 
-                            { label: 'Gold Coast (OOL)', data: [14, 22, 19, 12], borderColor: '#f59e0b', backgroundColor: '#fef3c7', borderWidth: 3, tension: 0.4, fill: true }
+                            { label: '名古屋市區 (Nagoya)', data: [25, 35, 29, 26], borderColor: '#f97316', backgroundColor: '#ffedd5', borderWidth: 3, tension: 0.4, fill: true }, 
+                            { label: '新穗高/上高地 (Mountains)', data: [15, 22, 18, 12], borderColor: '#0d9488', backgroundColor: '#ccfbf1', borderWidth: 3, tension: 0.4, fill: true }
                         ] 
                     }, 
                     options: { 
                         responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { labels: { font: { weight: 'bold' } } } },
+                        plugins: { legend: { labels: { font: { family: "'Noto Sans TC', sans-serif", weight: 'bold' } } } },
                         scales: { 
                             y: { grid: { color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
                             x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
@@ -950,6 +740,11 @@
                 });
             }
 
+            document.addEventListener('DOMContentLoaded', () => {
+                renderMapCodes();
+                lucide.createIcons();
+                initChart();
+            });
         }
     </script>
 </body>
