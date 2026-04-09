@@ -14,6 +14,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- CryptoJS (用於 SHA-256 密碼雜湊) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 
@@ -44,11 +47,9 @@
             color: #1e293b;
         }
         
-        /* 隱藏預設捲軸但保持滾動 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* 懸浮分頁樣式 */
         .tab-content { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .tab-content.active { display: block; }
         
@@ -57,22 +58,15 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .nav-btn {
-            transition: all 0.3s ease;
-        }
+        .nav-btn { transition: all 0.3s ease; }
         .nav-btn.active {
-            background-color: #0d9488; /* theme-600 */
+            background-color: #0d9488;
             color: white;
             box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
         }
-        .nav-btn:not(.active) {
-            color: #475569;
-        }
-        .nav-btn:not(.active):hover {
-            background-color: #f1f5f9;
-        }
+        .nav-btn:not(.active) { color: #475569; }
+        .nav-btn:not(.active):hover { background-color: #f1f5f9; }
 
-        /* 編輯模式 UX 優化 */
         [contenteditable="true"] {
             transition: all 0.2s;
             border-bottom: 1px dashed transparent;
@@ -91,7 +85,6 @@
             box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
         }
 
-        /* 毛玻璃卡片效果 (Glassmorphism) */
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -100,7 +93,6 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
         }
 
-        /* 時間軸線條 */
         .timeline-line::before {
             content: '';
             position: absolute;
@@ -111,31 +103,54 @@
             background: #ccfbf1;
             z-index: 0;
         }
-        .timeline-item:last-child .timeline-line::before {
-            display: none;
+        .timeline-item:last-child .timeline-line::before { display: none; }
+        
+        #sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 50;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            pointer-events: none;
         }
+        .status-saved { background: #dcfce7; color: #166534; }
+        .status-saving { background: #fef9c3; color: #854d0e; }
+        .status-error { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body class="min-h-screen pb-24" style="display: none;">
 
     <!-- ========================================== -->
-    <!-- 雙重權限認證腳本 (RBAC Password Guard) -->
+    <!-- 安全升級：密碼 SHA-256 雜湊驗證 -->
     <!-- ========================================== -->
     <script>
-        let isEditor = false; // 全域變數，決定 UI 渲染邏輯
-        
-        (function() {
-            const VIEW_PASSWORD = "8888"; // 檢視者密碼 (ReadOnly)
-            const EDIT_PASSWORD = "ysYS1028"; // 編輯者密碼 (Read & Write)
+        let isEditor = false; 
+
+        (function initAuth() {
+            // [安全] 採用不可逆的 SHA-256 雜湊
+            const VIEW_HASH = "0a010d8ee75f3a0786fb269efdbcf9ddc0eb00924b1dc71501b15264b3ecb53a"; 
+            const EDIT_HASH = "b9ab11cdfa481e355e1aab698f2b740eb7dfd1dd2ef1d7d07d12f3bc30cb8558"; 
             
             let userRole = sessionStorage.getItem('dashboard_role');
 
             if (!userRole) {
                 const input = prompt("請輸入密碼：\n");
+                if (!input) return location.reload();
+
+                // 使用 CryptoJS 計算 SHA-256 雜湊值
+                const inputHash = CryptoJS.SHA256(input).toString(); 
                 
-                if (input === EDIT_PASSWORD) {
+                if (inputHash === EDIT_HASH) {
                     userRole = 'editor';
-                } else if (input === VIEW_PASSWORD) {
+                } else if (inputHash === VIEW_HASH) {
                     userRole = 'viewer';
                 } else {
                     document.body.style.display = 'flex';
@@ -160,6 +175,12 @@
     </script>
     <!-- ========================================== -->
 
+    <!-- Status Indicator -->
+    <div id="sync-status" class="status-saved">
+        <div class="w-2 h-2 rounded-full bg-green-500" id="sync-dot"></div>
+        <span id="sync-text">已連線</span>
+    </div>
+
     <!-- 頂部狀態與橫幅 (Top Banner) -->
     <div class="pt-6 px-4 max-w-6xl mx-auto">
         <div class="glass-card rounded-3xl p-6 relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -171,7 +192,6 @@
                     <span class="bg-theme-100 text-theme-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
                         <i data-lucide="car" width="14"></i> 仲夏北陸自駕
                     </span>
-                    <!-- 權限標籤 -->
                     <span id="role-badge" class="text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1"></span>
                 </div>
                 <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
@@ -182,16 +202,10 @@
                     <span class="flex items-center gap-1"><i data-lucide="users" width="16"></i> 5 People</span>
                 </p>
             </div>
-            
-            <!-- 同步狀態 -->
-            <div id="sync-status" class="relative z-10 bg-white/80 px-4 py-2 rounded-2xl flex items-center gap-2 border border-slate-100 shadow-sm text-sm font-bold">
-                <div class="w-2.5 h-2.5 rounded-full bg-slate-300" id="sync-dot"></div>
-                <span id="sync-text" class="text-slate-600">初始化中...</span>
-            </div>
         </div>
     </div>
 
-    <!-- 懸浮置中導航列 (Floating Pill Navigation) -->
+    <!-- 懸浮置中導航列 -->
     <div class="sticky top-4 z-40 my-6 px-4 flex justify-center">
         <div class="glass-card p-1.5 rounded-full flex gap-1 shadow-lg border border-white">
             <button onclick="switchTab('overview')" id="btn-overview" class="nav-btn active flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm">
@@ -212,10 +226,9 @@
     <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-4 relative z-20">
         
-        <!-- 1. 儀表板總覽 (Bento Box Overview) -->
+        <!-- 1. 儀表板總覽 -->
         <div id="tab-overview" class="tab-content active space-y-6">
             
-            <!-- 全寬大圖模塊 (Full Width Image) -->
             <div class="glass-card rounded-3xl p-2 shadow-sm border border-white overflow-hidden flex flex-col justify-center bg-white">
                 <img src="./20260714_0723_名古屋&北陸_Schedule.jpg" 
                      alt="行程總覽圖" 
@@ -228,9 +241,7 @@
                 </div>
             </div>
 
-            <!-- 資訊快覽模塊 (Horizontal Grid) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 天數統計 -> 連結至日程表 -->
                 <div onclick="switchTab('daily')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-theme-200 group relative">
                     <div class="bg-theme-100 p-4 rounded-2xl text-theme-600 group-hover:scale-110 transition-transform"><i data-lucide="calendar-days" width="28"></i></div>
                     <div>
@@ -239,7 +250,6 @@
                     </div>
                     <i data-lucide="arrow-right" class="absolute top-4 right-4 text-theme-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                 </div>
-                <!-- 交通工具 -> 連結至資訊 -->
                 <div onclick="switchTab('advisories')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-blue-200 group relative">
                     <div class="bg-blue-100 p-4 rounded-2xl text-blue-600 group-hover:scale-110 transition-transform"><i data-lucide="car-front" width="28"></i></div>
                     <div>
@@ -248,7 +258,6 @@
                     </div>
                     <i data-lucide="arrow-right" class="absolute top-4 right-4 text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                 </div>
-                <!-- 預算概覽 -> 連結至預算 -->
                 <div onclick="switchTab('budget')" class="glass-card rounded-3xl p-6 border border-white flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all hover:border-orange-200 group relative">
                     <div class="bg-orange-100 p-4 rounded-2xl text-orange-600 group-hover:scale-110 transition-transform"><i data-lucide="circle-dollar-sign" width="28"></i></div>
                     <div>
@@ -259,7 +268,6 @@
                 </div>
             </div>
 
-            <!-- MapCode 導航庫 -->
             <div class="glass-card rounded-3xl p-6 md:p-8 border border-white">
                 <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
                     <i data-lucide="navigation" class="text-theme-500"></i> 重點導航庫 (Google Maps & MapCode)
@@ -270,7 +278,7 @@
             </div>
         </div>
 
-        <!-- 2. 每日日程 (Modern Timeline) -->
+        <!-- 2. 每日日程 -->
         <div id="tab-daily" class="tab-content">
             <div class="glass-card rounded-3xl p-4 md:p-8 border border-white">
                 <div class="flex justify-between items-end mb-8 border-b border-slate-100 pb-4">
@@ -283,13 +291,11 @@
                     </button>
                 </div>
                 
-                <div id="daily-container" class="space-y-6">
-                    <!-- JS 渲染 -->
-                </div>
+                <div id="daily-container" class="space-y-6"></div>
             </div>
         </div>
 
-        <!-- 3. 預算估算 (Budget Table) -->
+        <!-- 3. 預算估算 -->
         <div id="tab-budget" class="tab-content">
             <div class="glass-card rounded-3xl p-4 md:p-8 border border-white">
                 <div class="flex items-center gap-2 mb-6">
@@ -307,9 +313,7 @@
                                 <th class="py-4 w-12"></th>
                             </tr>
                         </thead>
-                        <tbody id="budget-tbody" class="divide-y divide-slate-50">
-                            <!-- JS 渲染 -->
-                        </tbody>
+                        <tbody id="budget-tbody" class="divide-y divide-slate-50"></tbody>
                         <tfoot class="bg-theme-50">
                             <tr>
                                 <td class="py-5 pl-6 font-black text-theme-800">總計</td>
@@ -319,7 +323,6 @@
                         </tfoot>
                     </table>
                 </div>
-                <!-- 只有 Editor 看得到新增按鈕 -->
                 <div id="budget-add-container" class="mt-4 hidden">
                     <button onclick="addBudgetItem()" class="flex items-center gap-2 text-theme-600 hover:bg-theme-50 px-4 py-2 rounded-full font-bold text-sm transition-colors">
                         <i data-lucide="plus" width="16"></i> 新增預算項目
@@ -328,9 +331,8 @@
             </div>
         </div>
 
-        <!-- 4. 注意事項 (Advisories) -->
+        <!-- 4. 注意事項 -->
         <div id="tab-advisories" class="tab-content space-y-6">
-            <!-- 氣溫圖表 -->
             <div class="glass-card rounded-3xl p-6 md:p-8 border border-white">
                 <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
                     <i data-lucide="thermometer-sun" class="text-orange-500"></i> 7月氣溫對比：名古屋 vs 高海拔山區
@@ -338,9 +340,7 @@
                 <div class="relative h-[280px] w-full"><canvas id="tempChart"></canvas></div>
             </div>
             
-            <!-- 建議卡片 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Outfit -->
                 <div class="glass-card rounded-3xl p-6 border border-white">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-black text-lg text-orange-600 flex items-center gap-2">
@@ -350,7 +350,6 @@
                     </div>
                     <ul id="outfit-list" class="space-y-4"></ul>
                 </div>
-                <!-- Drive -->
                 <div class="glass-card rounded-3xl p-6 border border-white">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="font-black text-lg text-theme-700 flex items-center gap-2">
@@ -371,7 +370,7 @@
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // =======================================================
-        // ⚠️ [Config Area] Firebase Config (已帶入您的金鑰)
+        // [Config Area] Firebase Config 
         // =======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyBQagGqyfWGkwwibgsnyZ69eNRjOHIenM0",
@@ -386,15 +385,11 @@
         const db = getFirestore(app);
         const DOC_ID = "summer_nagoya_trip"; 
 
-        // Global State
         let ITINERARY_DATA = [];
         let OUTFIT_TIPS = [];
         let DRIVE_TIPS = [];
         let budgetItems = [];
 
-        // -----------------------------------------------------
-        // DEFAULT DATA (Fallback)
-        // -----------------------------------------------------
         const DEFAULT_ITINERARY_DATA = [
             { day: 1, date: "2026/07/14 (二)", city: "Nagoya", title: "機場整備與都會機能確認", icon: "plane", weather: "酷熱 34°C", highlights: ["IT206 抵達 NGO", "領取 Noah HEV", "大須觀音/榮商圈"], stay: "Minn STATION Ai Nagoya", transport: "飛機, 自駕 (45km)", details: [ { id: 101, time: "09:00", action: "虎航 IT206 起飛 (TPE 第一航廈)", type: "transport", location: "Taiwan Taoyuan International Airport" }, { id: 102, time: "12:55", action: "抵達中部國際機場 (NGO)", type: "transport", location: "Chubu Centrair International Airport" }, { id: 103, time: "14:00", action: "Toyota Rent-a-Car 領車 (確認第3排與行李空間)", type: "transport", location: "Toyota Rent a Car Chubu International Airport" }, { id: 104, time: "16:00", action: "Minn STATION Ai Nagoya (自助報到 Check-in)", type: "stay", location: "Minn STATION Ai Nagoya" }, { id: 105, time: "17:00", action: "大須商店街 / 榮商圈 散策與採買", type: "shopping", location: "Osu Shopping Street" }, { id: 106, time: "19:00", action: "晚餐：熱田蓬萊軒 (鰻魚飯三吃)", type: "food", location: "Atsuta Horaiken Matsuzakaya" } ] },
             { day: 2, date: "2026/07/15 (三)", city: "Nagoya", title: "吉卜力園區與氣溫對策", icon: "sun", weather: "酷熱 35°C", highlights: ["吉卜力公園", "魔女之谷 / 大倉庫", "Oasis 21 夜景"], stay: "Minn STATION Ai Nagoya", transport: "自駕 (50km)", details: [ { id: 201, time: "09:00", action: "前往吉卜力公園 (停放北口停車場)", type: "transport", location: "愛・地球博記念公園（モリコロパーク）北口駐車場" }, { id: 202, time: "10:00", action: "吉卜力公園：魔女之谷、青春之丘 (早晨避暑)", type: "activity", location: "Ghibli Park" }, { id: 203, time: "13:00", action: "吉卜力大倉庫 (室內冷氣區參觀與午餐)", type: "activity", location: "Ghibli's Grand Warehouse" }, { id: 204, time: "16:00", action: "AEON Mall 長久手 (購物與避暑)", type: "shopping", location: "Aeon Mall Nagakute" }, { id: 205, time: "19:30", action: "Oasis 21 (水之宇宙船) 觀賞夜景", type: "activity", location: "Oasis 21" }, { id: 206, time: "20:30", action: "晚餐：山本屋 總本家 (味噌烏龍麵)", type: "food", location: "Yamamotoya Sohonke" } ] },
@@ -446,7 +441,7 @@
         function debounce(func, timeout = 1000){
             let timer;
             return (...args) => {
-                if(!isEditor) return; // Viewer 不能寫入
+                if(!isEditor) return; 
                 clearTimeout(timer);
                 updateStatus('saving');
                 timer = setTimeout(() => { func.apply(this, args); }, timeout);
@@ -456,7 +451,7 @@
         const unsub = onSnapshot(doc(db, "trips", DOC_ID), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                if (docSnap.metadata.hasPendingWrites) return; // 忽略本地尚未同步的快照 (防游標跳動)
+                if (docSnap.metadata.hasPendingWrites) return; 
 
                 ITINERARY_DATA = data.ITINERARY_DATA || [];
                 OUTFIT_TIPS = data.OUTFIT_TIPS || [];
@@ -510,9 +505,7 @@
             }
         }
 
-        // --- Role Based UI Application ---
         function applyRoleUI() {
-            // Role Badge
             const badge = document.getElementById('role-badge');
             if (isEditor) {
                 badge.innerHTML = `<i data-lucide="edit-3" width="12"></i> 編輯模式`;
@@ -531,7 +524,6 @@
             }
         }
 
-        // --- ACTIONS ---
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -560,7 +552,6 @@
             window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
         }
 
-        // Data Mutators (Guarded by isEditor inside saveToCloud)
         window.updateDailyDetail = function(dayId, detailId, field, value) {
             if(!isEditor) return;
             const detail = ITINERARY_DATA.find(d => d.day === dayId)?.details.find(d => d.id === detailId);
@@ -614,7 +605,6 @@
             saveToCloud(); renderAdvisories();
         }
 
-        // --- RENDERERS ---
         function renderAll() {
             renderDaily();
             renderMapCodes();
@@ -639,7 +629,7 @@
                                 <span class="text-2xl font-black leading-none">${day.day}</span>
                             </div>
                             <div>
-                                <h3 class="font-black text-xl text-slate-800">${day.title}</h3>
+                                <h3 class="font-bold text-xl text-slate-800">${day.title}</h3>
                                 <div class="flex items-center gap-3 text-sm font-bold text-slate-500 mt-1.5">
                                     <span>${day.date}</span>
                                     <span class="flex items-center gap-1"><i data-lucide="map-pin" width="14"></i> ${day.city}</span>
@@ -762,9 +752,8 @@
             });
         }
 
-        // --- DOM Ready ---
         document.addEventListener('DOMContentLoaded', () => {
-            renderMapCodes(); // Static render first
+            renderMapCodes();
             lucide.createIcons();
             initChart();
         });
